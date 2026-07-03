@@ -32,6 +32,7 @@ struct CatalogCardsView: View {
                 .overlay(alignment: .bottomLeading) {
                     Text(catalogCardModel.name)
                         .font(DSTypography.cardTitle)
+                        .foregroundStyle(.black)
                         .lineSpacing(1)
                         .padding(.top, 48)
                         .padding(.horizontal, 8)
@@ -44,5 +45,5 @@ struct CatalogCardsView: View {
 }
 
 #Preview {
-    CatalogCardsView(catalogCardModel: CatalogCard(id: "1", name: "Фермерские товары", image: ""))
+    CatalogCardsView(catalogCardModel: CatalogCard(id: "1", name: "Фермерские товары", image: "https://eat-and-pay.t02.ru/uploads/eats-jxl/bread.jxl"))
 }

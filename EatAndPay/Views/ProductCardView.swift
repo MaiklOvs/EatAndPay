@@ -35,9 +35,13 @@ struct ProductCardView: View {
             }
             HStack {
                 Image(.star)
+                    .renderingMode(.template)
+                    .foregroundStyle(Color.primary)
                 Text(product.rating.formatted())
                     .font(DSTypography.caption)
                 Image(.messages)
+                    .renderingMode(.template)
+                    .foregroundStyle(Color.primary)
                 Text(product.reviewCount.formatted())
                     .font(DSTypography.caption)
             }
