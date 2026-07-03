@@ -10,11 +10,11 @@ import SwiftUI
 /// Таб-бар в виде горизонтального списка текстовых кнопок
 public struct TextTabBar: View {
 
-    @State public var selectedIndex: Int
+    @Binding public var selectedIndex: Int
     public let tabs: [String]
 
-    public init(selectedIndex: Int, tabs: [String]) {
-        self._selectedIndex = State(initialValue: selectedIndex)
+    public init(selectedIndex: Binding<Int>, tabs: [String]) {
+        self._selectedIndex = selectedIndex
         self.tabs = tabs
     }
 
@@ -52,7 +52,7 @@ public struct TextTabBar: View {
         var body: some View {
             VStack {
                 TextTabBar(
-                    selectedIndex: selectedTab,
+                    selectedIndex: $selectedTab,
                     tabs: ["Для тебя", "Каталог", "Скидки", "Избранное"]
                 )
                 Spacer()

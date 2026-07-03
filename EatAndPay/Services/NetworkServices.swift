@@ -8,9 +8,6 @@
 import OpenAPIRuntime
 
 protocol NetworkServices {
-    func fetchProducts() -> Components.Schemas.ProductPreview
 
-    func fetchCart() -> Components.Schemas.Product
-
-    func fetchOrder() -> Components.Schemas.Order
+    func fetchCategories() async throws -> [Components.Schemas.Category]
 }

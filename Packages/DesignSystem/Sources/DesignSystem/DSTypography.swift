@@ -23,7 +23,9 @@ public enum DSTypography {
 
     /// Название продукта в карточке товара
     /// Inter Regular, 14px, line-height 17px
-    public static let cardTitle: Font = .custom(interFamilyName, size: 14)
+    public static let cardTitle: Font = .custom(interFamilyName, size: 14).weight(.bold)
+
+    public static let hugeTitle: Font = .custom(interFamilyName, size: 32).weight(.bold)
 
     // MARK: - Body
 
