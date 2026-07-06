@@ -6,7 +6,7 @@
 //
 
 // Для детального экрана КТ
-struct Product: Codable, Identifiable {
+struct ProductCardModel: Codable, Identifiable {
     let id: String
     let image: String
     let name: String

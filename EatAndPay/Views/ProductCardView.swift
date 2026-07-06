@@ -17,16 +17,16 @@ struct ProductCardView: View {
             AsyncImage(url: URL(string: product.image)) { image in
                 image.image?.resizable()
                     .aspectRatio(contentMode: .fill)
-                    .overlay(alignment: .topTrailing) {
-                        Button {
-                        } label: {
-                            Image(.heart)
-                                .padding(8)
-                        }
-                    }
             }
             .frame(width: 174, height: 256)
             .clipShape(RoundedRectangle(cornerRadius: 20))
+            .overlay(alignment: .topTrailing) {
+                Button {
+                } label: {
+                    Image(.heart)
+                        .padding(8)
+                }
+            }
 
             HStack(spacing: 6) {
                 Text(product.name)

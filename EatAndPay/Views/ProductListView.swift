@@ -13,6 +13,7 @@ struct ProductListView: View {
     let catalogModel: CatalogModel
     let name: String
     let category: String
+    @State private var selectedProduct: ProductPreviewModel?
 
     var body: some View {
         ScrollView {
@@ -44,12 +45,33 @@ struct ProductListView: View {
                                             discount: data.discount
                                         )
                     )
+                    .onTapGesture {
+                        selectedProduct = data
+                    }
                 }
             }
             .padding(10)
         }
         .task {
             await catalogModel.loadProductsList(query: Operations.get_sol_products.Input.Query(category: category))
+        }
+        .sheet(item: $selectedProduct) { product in
+            CardDetailsView(product:
+                                ProductCardModel(
+                                    id: "",
+                                    image: "https://eat-and-pay.t02.ru/uploads/eats-jxl/echpochmak.jxl",
+                                    name: "Огурец в тесте",
+                                    weight: 80,
+                                    price: 750,
+                                    rating: 3.8,
+                                    description: "Изысканная простота в каждой детали. Наш фирменный бутерброд — это воплощение классического сочетания отборных ингредиентов, которое придётся по вкусу даже самым искушённым гурманам.",
+                                    isFavorite: false,
+                                    discount: 100,
+                                    reviews: []
+                                )
+            )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
     }
 }

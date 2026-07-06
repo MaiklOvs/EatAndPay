@@ -25,7 +25,11 @@ public enum DSTypography {
     /// Inter Regular, 14px, line-height 17px
     public static let cardTitle: Font = .custom(interFamilyName, size: 14).weight(.bold)
 
+    public static let cardDetailsTitle: Font = .custom(interFamilyName, size: 26).weight(.bold)
+
     public static let hugeTitle: Font = .custom(interFamilyName, size: 32).weight(.bold)
+
+    public static let descriptionTitle: Font = .custom(interFamilyName, size: 20).weight(.bold)
 
     // MARK: - Body
 
