@@ -11,9 +11,10 @@ import DesignSystem
 struct CatalogView: View {
 
     @State private var catalogModel = CatalogModel(networkService: NetworkServicesImpl())
+    @State private var path = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 0) {
                 TextTabBar(
                     selectedIndex: Binding(
@@ -27,20 +28,8 @@ struct CatalogView: View {
 
                 switch catalogModel.selectedTab {
                 case .forYou:
-                    ScrollView {
-                        LazyVGrid(
-                            columns: [
-                                GridItem(.flexible(), spacing: 16),
-                                GridItem(.flexible(), spacing: 16)
-                            ],
-                            spacing: 16
-                        ) {
-                            ForEach(catalogModel.products) { product in
-                                ProductCardView(product: product)
-                            }
-                        }
-                        .padding(10)
-                    }
+                    Text("Для тебя")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 case .catalog:
                     ScrollView {
                         VStack(alignment: .leading, spacing: 0) {
@@ -60,7 +49,12 @@ struct CatalogView: View {
                                 spacing: 2
                             ) {
                                 ForEach(catalogModel.categories) { category in
-                                    CatalogCardsView(catalogCardModel: category)
+                                    Button {
+                                        path.append(category)
+                                    } label: {
+                                        CatalogCardsView(catalogCardModel: category)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             }
                         }
@@ -79,6 +73,13 @@ struct CatalogView: View {
                 }
             }
             .navigationTitle("")
+            .navigationDestination(for: CatalogCard.self) { category in
+                ProductListView(
+                    catalogModel: catalogModel,
+                    name: category.name,
+                    category: category.id
+                )
+            }
         }
     }
 }

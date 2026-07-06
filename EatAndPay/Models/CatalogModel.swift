@@ -21,17 +21,11 @@ final class CatalogModel {
 
     private let networkService: NetworkServices
 
-    var products: [ProductPreview] = []
+    var products: Products = Products(currentPage: 1, totalPages: 1, data: [])
 
     var categories: [CatalogCard] = []
 
     init(networkService: NetworkServices) {
-        products = [
-            ProductPreview(id: "1", image: "", name: "Огурец в тесте", weight: 80, price: 750, rating: 3.8, reviewCount: 1356, isFavorite: false, discount: nil),
-            ProductPreview(id: "2", image: "", name: "Ролл Филадельфия", weight: 250, price: 450, rating: 4.5, reviewCount: 342, isFavorite: true, discount: 10),
-            ProductPreview(id: "3", image: "", name: "Пицца Маргарита", weight: 400, price: 590, rating: 4.2, reviewCount: 567, isFavorite: false, discount: nil),
-            ProductPreview(id: "4", image: "", name: "Борщ", weight: 300, price: 320, rating: 4.7, reviewCount: 891, isFavorite: false, discount: 5),
-        ]
         self.networkService = networkService
     }
 
@@ -47,6 +41,31 @@ final class CatalogModel {
             }
         } catch {
             print("Failed to load categories: \(error)")
+        }
+    }
+
+    func loadProductsList(query: Operations.get_sol_products.Input.Query = .init()) async {
+        do {
+            let productsList = try await networkService.fetchProductsList(query: query)
+            products = Products(
+                currentPage: productsList.currentPage,
+                totalPages: productsList.totalPages,
+                data: productsList.data.map { item in
+                    ProductPreviewModel(
+                        id: item.id,
+                        image: item.image,
+                        name: item.name,
+                        weight: item.weight,
+                        price: item.price,
+                        rating: item.rating,
+                        reviewCount: item.reviewCount,
+                        isFavorite: item.isFavorite,
+                        discount: item.discount
+                    )
+                }
+            )
+        } catch {
+            print("Failed to load products list: \(error)")
         }
     }
 }

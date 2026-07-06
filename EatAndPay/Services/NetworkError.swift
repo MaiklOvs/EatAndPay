@@ -10,11 +10,14 @@ import Foundation
 enum NetworkError: LocalizedError {
     case unauthorized        // HTTP 401
     case unexpectedStatus(Int)  // любой другой необработанный статус
+    case badRequest
 
     var errorDescription: String? {
         switch self {
         case .unauthorized:
             "Не авторизован"
+        case .badRequest:
+            "Неверный запрос"
         case .unexpectedStatus(let code):
             "Неожиданный статус: \(code)"
         }
