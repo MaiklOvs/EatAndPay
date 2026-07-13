@@ -11,6 +11,7 @@ enum NetworkError: LocalizedError {
     case unauthorized        // HTTP 401
     case unexpectedStatus(Int)  // любой другой необработанный статус
     case badRequest
+    case notFound
 
     var errorDescription: String? {
         switch self {
@@ -20,6 +21,8 @@ enum NetworkError: LocalizedError {
             "Неверный запрос"
         case .unexpectedStatus(let code):
             "Неожиданный статус: \(code)"
+        case .notFound:
+            "Не найден"
         }
     }
 }

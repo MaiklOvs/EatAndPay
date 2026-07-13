@@ -11,6 +11,7 @@ import DesignSystem
 struct ProductInCart: View {
 
     let cartItem: CartItem
+    @Bindable var cartViewModel: CartViewModel
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -28,7 +29,11 @@ struct ProductInCart: View {
                     Text(cartItem.weight.formatted() + " г")
                         .foregroundStyle(DSColors.textSecondary)
                 }
-                CountButton(count: 1, action: {})
+                CountButton(
+                    count: cartItem.quantity,
+                    onDecrement: { cartViewModel.remove(productId: cartItem.id, price: cartItem.price) },
+                    onIncrement: { cartViewModel.add(productId: cartItem.id, price: cartItem.price) }
+                )
             }
             .padding(.bottom, 21)
         }
@@ -44,5 +49,7 @@ struct ProductInCart: View {
         price: 900,
         quantity: 1,
         available: true
-    ))
+    ),
+                  cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+    )
 }

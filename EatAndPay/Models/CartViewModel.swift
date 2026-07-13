@@ -73,6 +73,43 @@ final class CartViewModel {
         self.cart = cart
     }
 
+    func add(productId: String, price: Int) {
+        var cart = cart ?? Cart(
+            deliveryTime: 0,
+            orderPrice: 0,
+            deliveryPrice: 0,
+            totalPrice: 0,
+            totalItems: 0,
+            items: []
+        )
+
+        if let index = cart.items.firstIndex(where: { $0.id == productId }) {
+            cart.items[index].quantity += 1
+        }
+
+        cart.totalItems += 1
+        cart.orderPrice += price
+        cart.totalPrice += price
+        self.cart = cart
+    }
+
+    func remove(productId: String, price: Int) {
+        guard var cart,
+              let index = cart.items.firstIndex(where: { $0.id == productId }),
+              cart.items[index].quantity > 0 else { return }
+
+        cart.items[index].quantity -= 1
+
+        if cart.items[index].quantity == 0 {
+            cart.items.remove(at: index)
+        }
+
+        cart.totalItems -= 1
+        cart.orderPrice -= price
+        cart.totalPrice -= price
+        self.cart = cart
+    }
+
     func loadCart() async {
         do {
             let cartList = try await networkService.fetchCart()

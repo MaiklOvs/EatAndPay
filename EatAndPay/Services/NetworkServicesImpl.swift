@@ -53,4 +53,18 @@ final class NetworkServicesImpl: NetworkServices {
             throw NetworkError.unexpectedStatus(statusCode)
         }
     }
+
+    func fetchProductDetails(query: Operations.get_sol_products_sol__lcub_id_rcub_.Input) async throws -> Components.Schemas.Product {
+        let response = try await client.get_sol_products_sol__lcub_id_rcub_(query)
+        switch response {
+        case .ok(let okResponse):
+            return try okResponse.body.json
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        case .notFound(_):
+            throw NetworkError.notFound
+        }
+    }
 }

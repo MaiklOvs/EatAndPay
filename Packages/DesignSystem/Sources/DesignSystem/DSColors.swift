@@ -28,6 +28,14 @@ public enum DSColors {
         opacity: 1
     )
 
+    /// Цвет кнопки поиска
+    public static let searchButton = Color(
+        red: 246 / 255,
+        green: 246 / 255,
+        blue: 250 / 255,
+        opacity: 0.76
+    )
+
     // MARK: - Gradient
 
     /// Градиент кнопки добавления в корзину

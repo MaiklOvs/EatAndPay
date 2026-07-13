@@ -10,12 +10,12 @@ import DesignSystem
 
 struct CardDetailsView: View {
 
-    let product: ProductCardModel
+    @Bindable var viewModel: ProductCardViewModel
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(alignment: .leading) {
-            AsyncImage(url: URL(string: product.image)) { image in
+            AsyncImage(url: URL(string: viewModel.productCard?.image ?? "")) { image in
                 image.image?.resizable()
                     .aspectRatio(contentMode: .fill)
             }
@@ -30,7 +30,7 @@ struct CardDetailsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
 
             HStack(spacing: 10) {
-                Text(product.price.formatted() + " ₽")
+                Text("\(viewModel.productCard?.price.formatted() ?? "0") ₽")
                     .font(DSTypography.hugeTitle)
                     .frame(width: 297, height: 39, alignment: .leading)
                 Button {
@@ -40,18 +40,18 @@ struct CardDetailsView: View {
                 }
             }
             HStack(spacing: 10) {
-                Text(product.name)
+                Text(viewModel.productCard?.name ?? "")
                     .font(DSTypography.cardDetailsTitle)
-                Text(product.weight.formatted() + "г")
+                Text("\(viewModel.productCard?.weight.formatted() ?? "") г")
                     .font(DSTypography.cardDetailsTitle)
                     .foregroundStyle(DSColors.textSecondary)
             }
             .frame(width: 294, height: 30, alignment: .leading)
             HStack(spacing: 10) {
                 HStack(spacing: 6) {
-                    Text(product.rating.formatted())
+                    Text(viewModel.productCard?.rating.formatted() ?? "")
                         .font(DSTypography.cardDetailsTitle)
-                    ForEach(0..<Int(ceil(product.rating)), id: \.self) { _ in
+                    ForEach(0..<Int(ceil(viewModel.productCard?.rating ?? 5)), id: \.self) { _ in
                         Image(.star)
                             .renderingMode(.template)
                             .foregroundStyle(Color.primary)
@@ -61,13 +61,13 @@ struct CardDetailsView: View {
                     Image(.messages)
                         .renderingMode(.template)
                         .foregroundStyle(Color.primary)
-                    Text(product.reviews.count.formatted() + " отзывов")
+                    Text("\(viewModel.productCard?.reviews?.count.formatted() ?? " 0")  отзывов")
                         .font(DSTypography.cardDetailsTitle)
                 }
             }
             .frame(width: 351, height: 30, alignment: .leading)
 
-            Text(product.description)
+            Text(viewModel.productCard?.description ?? "")
                 .font(DSTypography.descriptionTitle)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             AddToCartButton(
@@ -79,18 +79,5 @@ struct CardDetailsView: View {
 }
 
 #Preview {
-    CardDetailsView(product:
-                        ProductCardModel(
-                            id: "",
-                            image: "https://eat-and-pay.t02.ru/uploads/eats-jxl/echpochmak.jxl",
-                            name: "Огурец в тесте",
-                            weight: 80,
-                            price: 750,
-                            rating: 3.8,
-                            description: "Изысканная простота в каждой детали. Наш фирменный бутерброд — это воплощение классического сочетания отборных ингредиентов, которое придётся по вкусу даже самым искушённым гурманам.",
-                            isFavorite: false,
-                            discount: 100,
-                            reviews: []
-                        )
-    )
+    CardDetailsView(viewModel: ProductCardViewModel(networkService: NetworkServicesImpl()))
 }

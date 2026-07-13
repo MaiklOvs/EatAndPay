@@ -91,7 +91,13 @@ struct CatalogView: View {
                 }
             }
             .overlay(alignment: .bottom) {
-                checkoutButtonView(isPresented: $isCartPresented)
+                HStack {
+                    SearchButton(action: {})
+                    Spacer()
+                    checkoutButtonView(isPresented: $isCartPresented)
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 12)
             }
             .navigationTitle("")
             .sheet(isPresented: $isCartPresented) {

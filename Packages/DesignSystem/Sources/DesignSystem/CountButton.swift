@@ -11,16 +11,22 @@ import SwiftUI
 public struct CountButton: View {
 
     private let count: Int
-    private let action: () -> Void
+    private let onIncrement: () -> Void
+    private let onDecrement: () -> Void
 
-    public init(count: Int, action: @escaping () -> Void) {
+    public init(
+        count: Int,
+        onDecrement: @escaping () -> Void,
+        onIncrement: @escaping () -> Void
+    ) {
         self.count = count
-        self.action = action
+        self.onIncrement = onIncrement
+        self.onDecrement = onDecrement
     }
 
     public var body: some View {
         HStack(spacing: 6) {
-            Button(action: action) {
+            Button(action: onDecrement) {
                 Image(systemName: "minus")
                     .font(.system(size: 16, weight: .bold))
             }
@@ -29,7 +35,7 @@ public struct CountButton: View {
                 .font(.system(size: 14, weight: .semibold))
                 .frame(width: 40, height: 17)
 
-            Button(action: action) {
+            Button(action: onIncrement) {
                 Image(systemName: "plus")
                     .font(.system(size: 16, weight: .bold))
             }
@@ -44,6 +50,10 @@ public struct CountButton: View {
 }
 
 #Preview {
-    CountButton(count: 1) {}
+    CountButton(
+        count: 1,
+        onDecrement: {},
+        onIncrement: {}
+    )
         .padding()
 }
