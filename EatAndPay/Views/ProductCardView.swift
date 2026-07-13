@@ -11,8 +11,12 @@ import DesignSystem
 struct ProductCardView: View {
 
     let product: ProductPreviewModel
+    @Bindable var cartViewModel: CartViewModel
 
     var body: some View {
+        let quantity = cartViewModel.quantity(for: product.id)
+        let displayedPrice = quantity > 0 ? product.price * quantity : product.price
+
         VStack(alignment: .leading) {
             AsyncImage(url: URL(string: product.image)) { image in
                 image.image?.resizable()
@@ -48,8 +52,10 @@ struct ProductCardView: View {
                     .font(DSTypography.caption)
             }
             CartButton(
-                price: product.price,
-                action: {}
+                price: displayedPrice,
+                count: quantity,
+                onDecrement: { cartViewModel.remove(product: product) },
+                onIncrement: { cartViewModel.add(product: product) }
             )
         }
         .frame(width: 174, height: 355)
@@ -68,6 +74,7 @@ struct ProductCardView: View {
                             reviewCount: 1356,
                             isFavorite: false,
                             discount: 100
-                        )
+                        ),
+                    cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
     )
 }

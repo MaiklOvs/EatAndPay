@@ -11,7 +11,24 @@ import DesignSystem
 struct CatalogView: View {
 
     @State private var catalogModel = CatalogModel(networkService: NetworkServicesImpl())
+    @State private var cartViewModel = CartViewModel(networkService: NetworkServicesImpl())
     @State private var path = NavigationPath()
+    @State private var isCartPresented = false
+
+    @ViewBuilder
+    private var checkoutButtonView: some View {
+        if let cart = cartViewModel.cart, !cart.items.isEmpty {
+            CheckoutButton(
+                price: cart.totalPrice,
+                count: cart.totalItems
+            ) {
+                isCartPresented = true
+            }
+            .padding(.horizontal, 12)
+            .padding(.bottom, 12)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+    }
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -62,6 +79,7 @@ struct CatalogView: View {
                     }
                     .task {
                         await catalogModel.loadCategories()
+                        await cartViewModel.loadCart()
                     }
 
                 case .discounts:
@@ -72,13 +90,19 @@ struct CatalogView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
+            checkoutButtonView
             .navigationTitle("")
+            .sheet(isPresented: $isCartPresented) {
+                CartView(cartViewModel: cartViewModel)
+            }
             .navigationDestination(for: CatalogCard.self) { category in
                 ProductListView(
                     catalogModel: catalogModel,
+                    cartViewModel: cartViewModel,
                     name: category.name,
-                    category: category.id
+                    category: category.id,
                 )
+                checkoutButtonView
             }
         }
     }

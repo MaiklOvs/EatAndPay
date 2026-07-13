@@ -20,7 +20,7 @@ public struct CountButton: View {
 
     public var body: some View {
         HStack(spacing: 6) {
-            Button(action: {}) {
+            Button(action: action) {
                 Image(systemName: "minus")
                     .font(.system(size: 16, weight: .bold))
             }
@@ -29,7 +29,7 @@ public struct CountButton: View {
                 .font(.system(size: 14, weight: .semibold))
                 .frame(width: 40, height: 17)
 
-            Button(action: {}) {
+            Button(action: action) {
                 Image(systemName: "plus")
                     .font(.system(size: 16, weight: .bold))
             }

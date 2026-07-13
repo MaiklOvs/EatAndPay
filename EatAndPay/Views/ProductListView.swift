@@ -11,6 +11,7 @@ import DesignSystem
 struct ProductListView: View {
 
     let catalogModel: CatalogModel
+    @Bindable var cartViewModel: CartViewModel
     let name: String
     let category: String
     @State private var selectedProduct: ProductPreviewModel?
@@ -44,7 +45,8 @@ struct ProductListView: View {
                                             reviewCount: data.reviewCount,
                                             isFavorite: data.isFavorite,
                                             discount: data.discount
-                                        )
+                                        ),
+                                    cartViewModel: cartViewModel
                     )
                     .onTapGesture {
                         selectedProduct = data
@@ -80,7 +82,7 @@ struct ProductListView: View {
 #Preview {
     ProductListView(
         catalogModel: CatalogModel(networkService: NetworkServicesImpl()),
-        name: "Выпечка",
+        cartViewModel: CartViewModel(networkService: NetworkServicesImpl()), name: "Выпечка",
         category: "bakery"
     )
 }

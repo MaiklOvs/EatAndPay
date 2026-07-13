@@ -10,8 +10,13 @@ import DesignSystem
 
 struct CartView: View {
 
-    let product: ProductCardModel
+    @Bindable var cartViewModel: CartViewModel
     @Environment(\.dismiss) private var dismiss
+
+    func countString(totalItems: Int?) -> String {
+        let items = totalItems ?? 0
+        return items > 0 ? "\(items) · товарa" : "\(items) · товаров"
+    }
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -28,35 +33,32 @@ struct CartView: View {
             }
 
             HStack {
-                Text("15 минут · ")
-                Text("4 товара")
+                Text("\(cartViewModel.cart?.deliveryTime.formatted() ?? "0") минут")
+                Text(countString(totalItems: cartViewModel.cart?.totalItems))
             }
             ScrollView {
                 LazyVStack(alignment: .leading) {
-                    ProductInCart(product: product)
-                    ProductInCart(product: product)
-                    ProductInCart(product: product)
-                    ProductInCart(product: product)
+                    ForEach(cartViewModel.cart?.items ?? []) { item in
+                        ProductInCart(cartItem: CartItem(
+                            id: item.id,
+                            image: item.image,
+                            name: item.name,
+                            weight: item.weight,
+                            price: item.price,
+                            quantity: item.quantity,
+                            available: item.available
+                        ))
+                    }
                 }
             }
         }
         .padding(.horizontal, 12)
+        .task {
+            await cartViewModel.loadCart()
+        }
     }
 }
 
 #Preview {
-    CartView(product:
-                        ProductCardModel(
-                            id: "",
-                            image: "https://eat-and-pay.t02.ru/uploads/eats-jxl/echpochmak.jxl",
-                            name: "Огурец в тесте",
-                            weight: 80,
-                            price: 750,
-                            rating: 3.8,
-                            description: "Изысканная простота в каждой детали. Наш фирменный бутерброд — это воплощение классического сочетания отборных ингредиентов, которое придётся по вкусу даже самым искушённым гурманам.",
-                            isFavorite: false,
-                            discount: 100,
-                            reviews: []
-                        )
-    )
+    CartView(cartViewModel: CartViewModel(networkService: NetworkServicesImpl()))
 }

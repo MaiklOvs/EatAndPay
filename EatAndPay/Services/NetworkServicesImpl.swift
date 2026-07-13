@@ -41,4 +41,16 @@ final class NetworkServicesImpl: NetworkServices {
             throw NetworkError.badRequest
         }
     }
+
+    func fetchCart() async throws -> Operations.get_sol_cart.Output.Ok.Body.jsonPayload {
+        let response = try await client.get_sol_cart()
+        switch response {
+        case .ok(let okResponse):
+            return try okResponse.body.json
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        }
+    }
 }

@@ -11,4 +11,5 @@ protocol NetworkServices {
 
     func fetchCategories() async throws -> [Components.Schemas.Category]
     func fetchProductsList(query: Operations.get_sol_products.Input.Query) async throws -> Operations.get_sol_products.Output.Ok.Body.jsonPayload
+    func fetchCart() async throws -> Operations.get_sol_cart.Output.Ok.Body.jsonPayload
 }
