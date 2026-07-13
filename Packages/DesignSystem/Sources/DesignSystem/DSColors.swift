@@ -20,6 +20,14 @@ public enum DSColors {
         opacity: 1
     )
 
+    /// Основной акцентный цвет кнопки количества товара в корзине
+    public static let smoky = Color(
+        red: 246 / 255,
+        green: 246 / 255,
+        blue: 250 / 255,
+        opacity: 1
+    )
+
     // MARK: - Gradient
 
     /// Градиент кнопки добавления в корзину

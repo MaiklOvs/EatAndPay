@@ -24,6 +24,7 @@ struct ProductListView: View {
                 .lineSpacing(7)
                 .padding(.top, 20)
                 .padding(.bottom, 8)
+                .padding(.leading, 12)
             LazyVGrid(
                 columns: [
                     GridItem(.flexible(), spacing: 3),
