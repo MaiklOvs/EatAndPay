@@ -15,6 +15,22 @@ struct ProductListView: View {
     let name: String
     let category: String
     @State private var selectedProduct: ProductPreviewModel?
+    @State private var isCartPresented = false
+
+    @ViewBuilder
+    private var checkoutButtonView: some View {
+        if let cart = cartViewModel.cart, !cart.items.isEmpty {
+            CheckoutButton(
+                price: cart.totalPrice,
+                count: cart.totalItems
+            ) {
+                isCartPresented = true
+            }
+            .padding(.horizontal, 12)
+            .padding(.bottom, 12)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -55,6 +71,9 @@ struct ProductListView: View {
             }
             .padding(10)
         }
+        .overlay(alignment: .bottom) {
+            checkoutButtonView
+        }
         .task {
             await catalogModel.loadProductsList(query: Operations.get_sol_products.Input.Query(category: category))
         }
@@ -67,7 +86,7 @@ struct ProductListView: View {
                                     weight: 80,
                                     price: 750,
                                     rating: 3.8,
-                                    description: "Изысканная простота в каждой детали. Наш фирменный бутерброд — это воплощение классического сочетания отборных ингредиентов, которое придётся по вкусу даже самым искушённым гурманам.",
+                                    description: "Изысканная простота в каждой детали. Наш фирменный бутерброд — это воплощение классического сочетания отборных ингредиентов, которое придётся по вкусу даже самым искушённым гурманам.",
                                     isFavorite: false,
                                     discount: 100,
                                     reviews: []
@@ -75,6 +94,9 @@ struct ProductListView: View {
             )
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $isCartPresented) {
+            CartView(cartViewModel: cartViewModel)
         }
     }
 }

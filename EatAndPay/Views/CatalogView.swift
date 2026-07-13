@@ -16,13 +16,13 @@ struct CatalogView: View {
     @State private var isCartPresented = false
 
     @ViewBuilder
-    private var checkoutButtonView: some View {
+    private func checkoutButtonView(isPresented: Binding<Bool>) -> some View {
         if let cart = cartViewModel.cart, !cart.items.isEmpty {
             CheckoutButton(
                 price: cart.totalPrice,
                 count: cart.totalItems
             ) {
-                isCartPresented = true
+                isPresented.wrappedValue = true
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
@@ -79,7 +79,7 @@ struct CatalogView: View {
                     }
                     .task {
                         await catalogModel.loadCategories()
-                        await cartViewModel.loadCart()
+//                        await cartViewModel.loadCart()
                     }
 
                 case .discounts:
@@ -90,7 +90,9 @@ struct CatalogView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            checkoutButtonView
+            .overlay(alignment: .bottom) {
+                checkoutButtonView(isPresented: $isCartPresented)
+            }
             .navigationTitle("")
             .sheet(isPresented: $isCartPresented) {
                 CartView(cartViewModel: cartViewModel)
@@ -100,9 +102,8 @@ struct CatalogView: View {
                     catalogModel: catalogModel,
                     cartViewModel: cartViewModel,
                     name: category.name,
-                    category: category.id,
+                    category: category.id
                 )
-                checkoutButtonView
             }
         }
     }

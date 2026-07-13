@@ -49,6 +49,33 @@ struct CartView: View {
                             available: item.available
                         ))
                     }
+                    ProductInCart(cartItem: CartItem(
+                        id: "apple-001",
+                        image: "https://eat-and-pay.t02.ru/uploads/eats-jxl/bread.jxl",
+                        name: "Огурец",
+                        weight: 100,
+                        price: 250,
+                        quantity: 10,
+                        available: true
+                    ))
+                    ProductInCart(cartItem: CartItem(
+                        id: "apple-001",
+                        image: "https://eat-and-pay.t02.ru/uploads/eats-jxl/bread.jxl",
+                        name: "Огурец",
+                        weight: 100,
+                        price: 250,
+                        quantity: 10,
+                        available: true
+                    ))
+                    ProductInCart(cartItem: CartItem(
+                        id: "apple-001",
+                        image: "https://eat-and-pay.t02.ru/uploads/eats-jxl/bread.jxl",
+                        name: "Огурец",
+                        weight: 100,
+                        price: 250,
+                        quantity: 10,
+                        available: true
+                    ))
                 }
             }
         }
