@@ -29,7 +29,7 @@ final class CartViewModel {
     }
 
     func totalCount() -> Int {
-        cart?.items.count ?? 0
+        cart?.items.reduce(0) { $0 + $1.quantity } ?? 0
     }
 
     @MainActor

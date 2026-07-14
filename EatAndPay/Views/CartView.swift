@@ -13,9 +13,22 @@ struct CartView: View {
     @Bindable var cartViewModel: CartViewModel
     @Environment(\.dismiss) private var dismiss
 
-    func countString(totalItems: Int?) -> String {
-        let items = totalItems ?? 0
-        return items > 0 ? "\(items) · товарa" : "\(items) · товаров"
+    func countString(count: Int) -> String {
+        let lastDigit = count % 10
+        let lastTwoDigits = count % 100
+
+        if lastTwoDigits >= 11 && lastTwoDigits <= 19 {
+            return "\(count) товаров"
+        }
+
+        switch lastDigit {
+        case 1:
+            return "\(count) товар"
+        case 2, 3, 4:
+            return "\(count) товара"
+        default:
+            return "\(count) товаров"
+        }
     }
 
     var body: some View {
@@ -24,7 +37,7 @@ struct CartView: View {
                 Text("Корзина")
                     .font(DSTypography.hugeTitle)
                     .padding(.top, 10)
-                Text(cartViewModel.cart?.items.count.formatted() ?? "0")
+                Text(cartViewModel.totalCount().formatted())
                     .font(DSTypography.hugeTitle)
                     .foregroundStyle(DSColors.textSecondary)
                     .padding(.top, 10)
@@ -34,7 +47,7 @@ struct CartView: View {
 
             HStack {
                 Text("\(cartViewModel.cart?.deliveryTime.formatted() ?? "0") минут")
-                Text(countString(totalItems: cartViewModel.cart?.items.count))
+                Text(countString(count: cartViewModel.totalCount()))
             }
             ScrollView {
                 LazyVStack(alignment: .leading) {
