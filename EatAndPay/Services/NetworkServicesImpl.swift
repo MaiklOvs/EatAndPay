@@ -54,6 +54,34 @@ final class NetworkServicesImpl: NetworkServices {
         }
     }
 
+    func addItemInCart(query: String) async throws -> Operations.post_sol_cart_sol_items.Output.Ok.Body.jsonPayload {
+        let response = try await client.post_sol_cart_sol_items(Operations.post_sol_cart_sol_items.Input(query: Operations.post_sol_cart_sol_items.Input.Query(id: query)))
+        switch response {
+        case .ok(let okResponse):
+            return try okResponse.body.json
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        case .notFound(_):
+            throw NetworkError.notFound
+        }
+    }
+
+    func removeItemInCart(query: String) async throws -> Operations.delete_sol_cart_sol_items_sol__lcub_id_rcub_.Output.Ok.Body.jsonPayload {
+        let response = try await client.delete_sol_cart_sol_items_sol__lcub_id_rcub_(Operations.delete_sol_cart_sol_items_sol__lcub_id_rcub_.Input(path: Operations.delete_sol_cart_sol_items_sol__lcub_id_rcub_.Input.Path(id: query)))
+        switch response {
+        case .ok(let okResponse):
+            return try okResponse.body.json
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        case .notFound(_):
+            throw NetworkError.notFound
+        }
+    }
+
     func fetchProductDetails(query: Operations.get_sol_products_sol__lcub_id_rcub_.Input) async throws -> Components.Schemas.Product {
         let response = try await client.get_sol_products_sol__lcub_id_rcub_(query)
         switch response {

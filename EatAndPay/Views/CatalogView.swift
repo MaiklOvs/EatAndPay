@@ -19,12 +19,11 @@ struct CatalogView: View {
     private func checkoutButtonView(isPresented: Binding<Bool>) -> some View {
         if let cart = cartViewModel.cart, !cart.items.isEmpty {
             CheckoutButton(
-                price: cart.totalPrice,
-                count: cart.totalItems
+                price: cartViewModel.totalPrice(),
+                count: cartViewModel.totalCount()
             ) {
                 isPresented.wrappedValue = true
             }
-            .padding(.horizontal, 12)
             .padding(.bottom, 12)
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
@@ -79,7 +78,7 @@ struct CatalogView: View {
                     }
                     .task {
                         await catalogModel.loadCategories()
-//                        await cartViewModel.loadCart()
+                        await cartViewModel.loadCart()
                     }
 
                 case .discounts:

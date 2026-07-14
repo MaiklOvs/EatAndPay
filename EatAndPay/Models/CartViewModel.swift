@@ -24,7 +24,22 @@ final class CartViewModel {
         cart?.items.first { $0.id == productId }?.quantity ?? 0
     }
 
+    func totalPrice() -> Int {
+        cart?.items.reduce(0) { $0 + $1.price * $1.quantity } ?? 0
+    }
+
+    func totalCount() -> Int {
+        cart?.items.count ?? 0
+    }
+
+    @MainActor
     func add(product: ProductPreviewModel) {
+        let productId = product.id
+        let productPrice = product.price
+        let productImage = product.image
+        let productName = product.name
+        let productWeight = Int(product.weight)
+
         var cart = cart ?? Cart(
             deliveryTime: 0,
             orderPrice: 0,
@@ -34,16 +49,16 @@ final class CartViewModel {
             items: []
         )
 
-        if let index = cart.items.firstIndex(where: { $0.id == product.id }) {
+        if let index = cart.items.firstIndex(where: { $0.id == productId }) {
             cart.items[index].quantity += 1
         } else {
             cart.items.append(
                 CartItem(
-                    id: product.id,
-                    image: product.image,
-                    name: product.name,
-                    weight: Int(product.weight),
-                    price: product.price,
+                    id: productId,
+                    image: productImage,
+                    name: productName,
+                    weight: productWeight,
+                    price: productPrice,
                     quantity: 1,
                     available: true
                 )
@@ -51,15 +66,24 @@ final class CartViewModel {
         }
 
         cart.totalItems += 1
-        cart.orderPrice += product.price
-        cart.totalPrice += product.price
+        cart.orderPrice += productPrice
+        cart.totalPrice += productPrice
         self.cart = cart
+
+        Task { [weak self, productId] in
+            await self?.addItemInCart(id: productId)
+        }
     }
 
+    @MainActor
     func remove(product: ProductPreviewModel) {
-        guard var cart,
-              let index = cart.items.firstIndex(where: { $0.id == product.id }),
-              cart.items[index].quantity > 0 else { return }
+        let productId = product.id
+        let productPrice = product.price
+
+        guard let index = cart?.items.firstIndex(where: { $0.id == productId }),
+              cart?.items[index].quantity ?? 0 > 0 else { return }
+
+        guard var cart else { return }
 
         cart.items[index].quantity -= 1
 
@@ -68,11 +92,16 @@ final class CartViewModel {
         }
 
         cart.totalItems -= 1
-        cart.orderPrice -= product.price
-        cart.totalPrice -= product.price
+        cart.orderPrice -= productPrice
+        cart.totalPrice -= productPrice
         self.cart = cart
+
+        Task { [weak self, productId] in
+            await self?.removeItemInCart(id: productId)
+        }
     }
 
+    @MainActor
     func add(productId: String, price: Int) {
         var cart = cart ?? Cart(
             deliveryTime: 0,
@@ -91,12 +120,18 @@ final class CartViewModel {
         cart.orderPrice += price
         cart.totalPrice += price
         self.cart = cart
+
+        Task { [weak self, productId] in
+            await self?.addItemInCart(id: productId)
+        }
     }
 
+    @MainActor
     func remove(productId: String, price: Int) {
-        guard var cart,
-              let index = cart.items.firstIndex(where: { $0.id == productId }),
-              cart.items[index].quantity > 0 else { return }
+        guard let index = cart?.items.firstIndex(where: { $0.id == productId }),
+              cart?.items[index].quantity ?? 0 > 0 else { return }
+
+        guard var cart else { return }
 
         cart.items[index].quantity -= 1
 
@@ -108,6 +143,10 @@ final class CartViewModel {
         cart.orderPrice -= price
         cart.totalPrice -= price
         self.cart = cart
+
+        Task { [weak self, productId] in
+            await self?.removeItemInCart(id: productId)
+        }
     }
 
     func loadCart() async {
@@ -132,7 +171,25 @@ final class CartViewModel {
                 }
             )
         } catch {
-            print("Failed to load products list: \(error)")
+            print("Failed to load cart: \(error)")
+        }
+    }
+
+    func addItemInCart(id: String) async {
+        do {
+            let cartItem = try await networkService.addItemInCart(query: id)
+            cart?.totalItems = cartItem.total
+        } catch {
+            print("Failed to add item in cart: \(error)")
+        }
+    }
+
+    func removeItemInCart(id: String) async {
+        do {
+            let cartItem = try await networkService.removeItemInCart(query: id)
+            cart?.totalItems = cartItem.total ?? 0
+        } catch {
+            print("Failed to remove item in cart: \(error)")
         }
     }
 }

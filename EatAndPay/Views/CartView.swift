@@ -24,19 +24,17 @@ struct CartView: View {
                 Text("Корзина")
                     .font(DSTypography.hugeTitle)
                     .padding(.top, 10)
-
-                Text(cartViewModel.cart?.totalItems.formatted() ?? "0")
+                Text(cartViewModel.cart?.items.count.formatted() ?? "0")
                     .font(DSTypography.hugeTitle)
                     .foregroundStyle(DSColors.textSecondary)
                     .padding(.top, 10)
-
+                Spacer()
                 CloseButton(action: { dismiss() } )
-                    .padding(.leading, 188)
             }
 
             HStack {
                 Text("\(cartViewModel.cart?.deliveryTime.formatted() ?? "0") минут")
-                Text(countString(totalItems: cartViewModel.cart?.totalItems))
+                Text(countString(totalItems: cartViewModel.cart?.items.count))
             }
             ScrollView {
                 LazyVStack(alignment: .leading) {
@@ -45,8 +43,8 @@ struct CartView: View {
                             id: item.id,
                             image: item.image,
                             name: item.name,
-                            weight: item.weight,
-                            price: item.price,
+                            weight: item.weight * item.quantity,
+                            price: item.price * item.quantity,
                             quantity: item.quantity,
                             available: item.available
                         ), cartViewModel: cartViewModel)
@@ -56,7 +54,7 @@ struct CartView: View {
         }
         .padding(.horizontal, 12)
         .task {
-//            await cartViewModel.loadCart()
+            await cartViewModel.loadCart()
         }
     }
 }

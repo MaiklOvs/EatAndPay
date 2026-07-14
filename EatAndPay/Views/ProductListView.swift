@@ -22,12 +22,11 @@ struct ProductListView: View {
     private var checkoutButtonView: some View {
         if let cart = cartViewModel.cart, !cart.items.isEmpty {
             CheckoutButton(
-                price: cart.totalPrice,
-                count: cart.totalItems
+                price: cartViewModel.totalPrice(),
+                count: cartViewModel.totalCount()
             ) {
                 isCartPresented = true
             }
-            .padding(.horizontal, 12)
             .padding(.bottom, 12)
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
