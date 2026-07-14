@@ -11,6 +11,7 @@ import DesignSystem
 struct CardDetailsView: View {
 
     @Bindable var viewModel: ProductCardViewModel
+    @Bindable var cartViewModel: CartViewModel
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -71,7 +72,12 @@ struct CardDetailsView: View {
                 .font(DSTypography.descriptionTitle)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             AddToCartButton(
-                action: {}
+                action: { cartViewModel.add(
+                    productId: viewModel.productCard?.id ?? "",
+                    price: viewModel.productCard?.price ?? 0
+                )
+                    dismiss()
+                }
             )
         }
         .padding(.horizontal, 12)
@@ -79,5 +85,8 @@ struct CardDetailsView: View {
 }
 
 #Preview {
-    CardDetailsView(viewModel: ProductCardViewModel(networkService: NetworkServicesImpl()))
+    CardDetailsView(
+        viewModel: ProductCardViewModel(networkService: NetworkServicesImpl()),
+        cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+    )
 }

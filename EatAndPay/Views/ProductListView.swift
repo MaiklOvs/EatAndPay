@@ -84,7 +84,7 @@ struct ProductListView: View {
             await catalogModel.loadProductsList(query: Operations.get_sol_products.Input.Query(category: category))
         }
         .sheet(item: $selectedProduct) { product in
-            CardDetailsView(viewModel: productCardViewModel)
+            CardDetailsView(viewModel: productCardViewModel, cartViewModel: cartViewModel)
                 .task(id: product.id) {
                     await productCardViewModel.loadProductDetails(id: product.id)
                 }
