@@ -76,10 +76,6 @@ struct CatalogView: View {
                         }
                         .padding(.horizontal, 12)
                     }
-                    .task {
-                        await catalogModel.loadCategories()
-                        await cartViewModel.loadCart()
-                    }
                 case .discounts:
                     Text("Скидки")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -144,6 +140,11 @@ struct CatalogView: View {
                     name: category.name,
                     category: category.id
                 )
+            }
+            .task {
+                await catalogModel.loadCategories()
+                await catalogModel.loadProductsList()
+                await cartViewModel.loadCart()
             }
         }
     }
