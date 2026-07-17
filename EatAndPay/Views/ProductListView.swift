@@ -11,12 +11,13 @@ import DesignSystem
 struct ProductListView: View {
 
     let catalogModel: CatalogModel
-    @Bindable var cartViewModel: CartViewModel
     let name: String
     let category: String
-    @State private var selectedProduct: ProductPreviewModel?
-    @State private var productCardViewModel = ProductCardViewModel(networkService: NetworkServicesImpl())
+
+    @Bindable var cartViewModel: CartViewModel
+    @State var searchViewModel: SearchViewModel
     @State private var isCartPresented = false
+    @State private var isSearchPresented = false
 
     @ViewBuilder
     private var checkoutButtonView: some View {
@@ -33,47 +34,16 @@ struct ProductListView: View {
     }
 
     var body: some View {
-        ScrollView {
-            Text(name)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .font(DSTypography.hugeTitle)
-                .tracking(-0.165)
-                .lineSpacing(7)
-                .padding(.top, 20)
-                .padding(.bottom, 8)
-                .padding(.leading, 12)
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: 3),
-                    GridItem(.flexible(), spacing: 3)
-                ],
-                spacing: 16
-            ) {
-                ForEach(catalogModel.products.data) { data in
-                    ProductCardView(product:
-                                        ProductPreviewModel(
-                                            id: data.id,
-                                            image: data.image,
-                                            name: data.name,
-                                            weight: data.weight,
-                                            price: data.price,
-                                            rating: data.rating,
-                                            reviewCount: data.reviewCount,
-                                            isFavorite: data.isFavorite,
-                                            discount: data.discount
-                                        ),
-                                    cartViewModel: cartViewModel
-                    )
-                    .onTapGesture {
-                        selectedProduct = data
-                    }
-                }
-            }
-            .padding(10)
-        }
+        ProductGridView(
+            productPreviewModel: catalogModel.products.data,
+            title: name,
+            cartViewModel: cartViewModel
+        )
         .overlay(alignment: .bottom) {
             HStack {
-                SearchButton(action: {})
+                SearchButton(action: {
+                    isSearchPresented = true
+                })
                 Spacer()
                 checkoutButtonView
             }
@@ -83,16 +53,14 @@ struct ProductListView: View {
         .task {
             await catalogModel.loadProductsList(query: Operations.get_sol_products.Input.Query(category: category))
         }
-        .sheet(item: $selectedProduct) { product in
-            CardDetailsView(viewModel: productCardViewModel, cartViewModel: cartViewModel)
-                .task(id: product.id) {
-                    await productCardViewModel.loadProductDetails(id: product.id)
-                }
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
-        }
         .sheet(isPresented: $isCartPresented) {
             CartView(cartViewModel: cartViewModel)
+        }
+        .sheet(isPresented: $isSearchPresented) {
+            SearchView(
+                searchViewModel: searchViewModel,
+                cartViewModel: cartViewModel
+            )
         }
     }
 }
@@ -100,7 +68,9 @@ struct ProductListView: View {
 #Preview {
     ProductListView(
         catalogModel: CatalogModel(networkService: NetworkServicesImpl()),
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl()), name: "Выпечка",
-        category: "bakery"
+        name: "Выпечка",
+        category: "bakery",
+        cartViewModel: CartViewModel(networkService: NetworkServicesImpl()),
+        searchViewModel: SearchViewModel(allProducts: [])
     )
 }

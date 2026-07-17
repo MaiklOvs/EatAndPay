@@ -34,10 +34,16 @@ struct CardDetailsView: View {
                 Text("\(viewModel.productCard?.price.formatted() ?? "0") ₽")
                     .font(DSTypography.hugeTitle)
                     .frame(width: 297, height: 39, alignment: .leading)
+                Spacer()
                 Button {
                 } label: {
-                    Image(.heart)
-                        .frame(width: 44, height: 44)
+                    if viewModel.productCard?.isFavorite ?? false {
+                        Image(.isFavorite)
+                            .frame(width: 44, height: 44)
+                    } else {
+                        Image(.heart)
+                            .frame(width: 44, height: 44)
+                    }
                 }
             }
             HStack(spacing: 10) {

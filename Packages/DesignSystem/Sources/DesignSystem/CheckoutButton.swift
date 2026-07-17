@@ -14,14 +14,17 @@ public struct CheckoutButton: View {
     private let action: () -> Void
     private let price: Int
     private let count: Int
+    private let isExpanded: Bool
 
     public init(
         price: Int,
         count: Int,
+        isExpanded: Bool = false,
         action: @escaping () -> Void) {
             self.action = action
             self.price = price
             self.count = count
+            self.isExpanded = isExpanded
         }
 
     func countString(count: Int) -> String {
@@ -55,12 +58,18 @@ public struct CheckoutButton: View {
                         .padding(.leading, 10)
                         .padding(.bottom, 7.5)
                 }
+
+                if isExpanded {
+                    Spacer()
+                }
+
                 Text("Оформить")
                     .font(.system(size: 20, weight: .semibold))
                     .padding(.trailing, 18)
                     .padding(.bottom, 14.5)
                     .padding(.top, 11.5)
             }
+            .frame(maxWidth: isExpanded ? .infinity : nil)
             .foregroundStyle(.white)
             .background(DSColors.accentGradient)
             .cornerRadius(12)

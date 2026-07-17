@@ -20,15 +20,20 @@ struct ProductCardView: View {
         VStack(alignment: .leading) {
             AsyncImage(url: URL(string: product.image)) { image in
                 image.image?.resizable()
-                    .aspectRatio(contentMode: .fill)
+                    .aspectRatio(174.0 / 200.0, contentMode: .fill)
             }
             .frame(width: 174, height: 256)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay(alignment: .topTrailing) {
                 Button {
                 } label: {
-                    Image(.heart)
-                        .padding(8)
+                    if product.isFavorite {
+                        Image(.isFavorite)
+                            .padding(10)
+                    } else {
+                        Image(.heart)
+                            .padding(8)
+                    }
                 }
             }
 
@@ -58,7 +63,6 @@ struct ProductCardView: View {
                 onIncrement: { cartViewModel.add(product: product) }
             )
         }
-        .frame(width: 174, height: 355)
     }
 }
 

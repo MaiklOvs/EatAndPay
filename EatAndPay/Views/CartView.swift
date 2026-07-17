@@ -64,6 +64,21 @@ struct CartView: View {
                     }
                 }
             }
+            HStack(spacing: 10) {
+                Text("Итого:")
+                    .font(DSTypography.hugeTitle)
+                    .padding(.top, 10)
+                Text(cartViewModel.totalPrice().formatted() + " ₽")
+                    .font(DSTypography.hugeTitle)
+                    .foregroundStyle(DSColors.textSecondary)
+                    .padding(.top, 10)
+            }
+            CheckoutButton(
+                price: cartViewModel.totalPrice(),
+                count: cartViewModel.totalCount(),
+                isExpanded: true,
+                action: {}
+            )
         }
         .padding(.horizontal, 12)
         .task {

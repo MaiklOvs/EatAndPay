@@ -15,17 +15,30 @@ public struct SearchBar: View {
 
     private let searchText: Binding<String>
 
-    public init(searchText: Binding<String>, action: @escaping () -> Void) {
-        self.action = action
+    @Binding private var isFocused: Bool
+    @FocusState private var focusState: Bool
+
+    public init(
+        searchText: Binding<String>,
+        isFocused: Binding<Bool>,
+        action: @escaping () -> Void
+    ) {
         self.searchText = searchText
+        self._isFocused = isFocused
+        self.action = action
     }
 
     public var body: some View {
         HStack {
             Image(.search)
             TextField("Поиск", text: searchText)
-                .onSubmit {
-                    action()
+                .focused($focusState)
+                .onSubmit { action() }
+                .onChange(of: focusState) { _, newValue in
+                    isFocused = newValue
+                }
+                .onChange(of: isFocused) { _, newValue in
+                    focusState = newValue
                 }
         }
         .padding(10)
@@ -42,6 +55,9 @@ public struct SearchBar: View {
 }
 
 #Preview {
-    SearchBar(searchText: .constant("")) {}
+    SearchBar(
+        searchText: .constant(""),
+        isFocused: .constant(false)
+    ) {}
         .padding()
 }

@@ -14,7 +14,15 @@ final class SearchViewModel {
 
     var allProducts: [ProductPreviewModel]
 
-    private var searchHistory: [String] = []
+    var searchHistory: [String] = []
+
+    var suggestions: [String] {
+        guard !searchText.isEmpty else { return [] }
+        let matches = allProducts.filter {
+            $0.name.localizedCaseInsensitiveContains(searchText)
+        }
+        return Array(Set(matches.map(\.name))).sorted()
+    }
 
     init(allProducts: [ProductPreviewModel]) {
         self.allProducts = allProducts

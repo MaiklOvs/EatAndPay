@@ -89,44 +89,12 @@ struct CatalogView: View {
                     Text("Скидки")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 case .favorites:
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text("Избранное")
-                                .font(DSTypography.hugeTitle)
-                                .tracking(-0.165)
-                                .lineSpacing(7)
-                                .padding(.top, 20)
-                                .padding(.bottom, 8)
-
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible(), spacing: 2),
-                                    GridItem(.flexible(), spacing: 2),
-                                ],
-                                spacing: 2
-                            ) {
-                                ForEach(catalogModel.products.data) { item in
-                                    if item.isFavorite {
-                                        ProductCardView(
-                                            product: ProductPreviewModel(
-                                                id: item.id,
-                                                image: item.image,
-                                                name: item.name,
-                                                weight: item.weight,
-                                                price: item.price,
-                                                rating: item.rating,
-                                                reviewCount: item.reviewCount,
-                                                isFavorite: item.isFavorite,
-                                                discount: item.discount
-                                            ),
-                                            cartViewModel: cartViewModel
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 12)
-                    }
+                    ProductGridView(
+                        productPreviewModel: catalogModel.products.data.filter { $0.isFavorite },
+                        title: "Избранное",
+                        cartViewModel: cartViewModel
+                    )
+                    .padding(.horizontal, 12)
                 }
             }
             .overlay(alignment: .bottom) {
@@ -151,9 +119,10 @@ struct CatalogView: View {
             .navigationDestination(for: CatalogCard.self) { category in
                 ProductListView(
                     catalogModel: catalogModel,
-                    cartViewModel: cartViewModel,
                     name: category.name,
-                    category: category.id
+                    category: category.id,
+                    cartViewModel: cartViewModel,
+                    searchViewModel: searchViewModel
                 )
             }
             .task {

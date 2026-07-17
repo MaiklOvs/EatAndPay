@@ -12,6 +12,7 @@ struct SearchView: View {
 
     @Bindable var searchViewModel: SearchViewModel
     @Bindable var cartViewModel: CartViewModel
+    @State private var isSearchBarFocused = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -25,25 +26,61 @@ struct SearchView: View {
                 Spacer()
             }
             ScrollView {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: 2),
-                        GridItem(.flexible(), spacing: 2),
-                    ],
-                    spacing: 2
-                ) {
-                    ForEach(searchViewModel.results) { result in
-                        ProductCardView(
-                            product: result,
-                            cartViewModel: cartViewModel
-                        )
+                LazyVStack {
+                    if searchViewModel.searchText.isEmpty && isSearchBarFocused {
+                        ForEach(searchViewModel.searchHistory, id: \.self) { query in
+                            Button {
+                                searchViewModel.searchText = query
+                            } label: {
+                                Text(query)
+                                    .font(DSTypography.seatchTitle)
+                                    .foregroundStyle(.black)
+                                    .lineLimit(1)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.leading, 12)
+                            }
+                        }
+                    }
+                    if !searchViewModel.searchText.isEmpty && isSearchBarFocused {
+                        ForEach(searchViewModel.suggestions, id: \.self) { suggestion in
+                            Button {
+                                searchViewModel.searchText = suggestion
+                            } label: {
+                                Text(suggestion)
+                                    .font(DSTypography.seatchTitle)
+                                    .foregroundStyle(.black)
+                                    .lineLimit(1)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.leading, 12)
+                            }
+                        }
+                    }
+                    if !searchViewModel.searchText.isEmpty {
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible(), spacing: 2),
+                                GridItem(.flexible(), spacing: 2)
+                            ],
+                            spacing: 2
+                        ) {
+                            ForEach(searchViewModel.results) { result in
+                                ProductCardView(
+                                    product: result,
+                                    cartViewModel: cartViewModel
+                                )
+                            }
+                        }
                     }
                 }
             }
             .frame(maxHeight: .infinity)
 
-            SearchBar(searchText: $searchViewModel.searchText, action: {
+            SearchBar(
+                searchText: $searchViewModel.searchText,
+                isFocused: $isSearchBarFocused,
+                action: {
                 searchViewModel.addToHistory(searchViewModel.searchText)
+
             })
                 .padding(.horizontal, 12)
                 .padding(.bottom, 12)
@@ -66,5 +103,6 @@ struct SearchView: View {
                 discount: 100
             )
         ]),
-    cartViewModel: CartViewModel(networkService: NetworkServicesImpl()))
+        cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+    )
 }
