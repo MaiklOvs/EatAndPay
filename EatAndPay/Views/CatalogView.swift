@@ -12,8 +12,10 @@ struct CatalogView: View {
 
     @State private var catalogModel = CatalogModel(networkService: NetworkServicesImpl())
     @State private var cartViewModel = CartViewModel(networkService: NetworkServicesImpl())
+    @State private var searchViewModel = SearchViewModel(allProducts: [])
     @State private var path = NavigationPath()
     @State private var isCartPresented = false
+    @State private var isSearchPresented = false
 
     @ViewBuilder
     private func checkoutButtonView(isPresented: Binding<Bool>) -> some View {
@@ -27,6 +29,13 @@ struct CatalogView: View {
             .padding(.bottom, 12)
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
+    }
+
+    @ViewBuilder
+    private func searchButtonView(isPresented: Binding<Bool>) -> some View {
+        SearchButton(action: {
+            isPresented.wrappedValue = true
+        })
     }
 
     var body: some View {
@@ -122,7 +131,7 @@ struct CatalogView: View {
             }
             .overlay(alignment: .bottom) {
                 HStack {
-                    SearchButton(action: {})
+                    searchButtonView(isPresented: $isSearchPresented)
                     Spacer()
                     checkoutButtonView(isPresented: $isCartPresented)
                 }
@@ -132,6 +141,12 @@ struct CatalogView: View {
             .navigationTitle("")
             .sheet(isPresented: $isCartPresented) {
                 CartView(cartViewModel: cartViewModel)
+            }
+            .sheet(isPresented: $isSearchPresented) {
+                SearchView(
+                    searchViewModel: searchViewModel,
+                    cartViewModel: cartViewModel
+                )
             }
             .navigationDestination(for: CatalogCard.self) { category in
                 ProductListView(
@@ -145,6 +160,7 @@ struct CatalogView: View {
                 await catalogModel.loadCategories()
                 await catalogModel.loadProductsList()
                 await cartViewModel.loadCart()
+                searchViewModel.allProducts = catalogModel.products.data
             }
         }
     }
