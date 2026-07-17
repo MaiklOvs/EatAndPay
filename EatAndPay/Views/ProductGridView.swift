@@ -50,17 +50,13 @@ struct ProductGridView: View {
             .padding(10)
         }
         .sheet(item: $selectedProduct) { product in
-            let viewModel = ProductCardViewModel(networkService: NetworkServicesImpl())
             CardDetailsView(
                 productId: product.id,
                 cartViewModel: cartViewModel,
                 onFavoriteToggle: { onFavoriteToggle(product.id) }
             )
-                .task(id: product.id) {
-                    await viewModel.loadProductDetails(id: product.id)
-                }
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
     }
 }

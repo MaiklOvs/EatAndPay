@@ -12,7 +12,7 @@ struct Products {
     var data: [ProductPreviewModel]
 }
 
-struct ProductPreviewModel: Codable, Identifiable {
+struct ProductPreviewModel: Codable, Identifiable, Equatable {
     let id: String
     let image: String
     let name: String

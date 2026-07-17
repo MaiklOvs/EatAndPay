@@ -101,6 +101,9 @@ struct CatalogView: View {
                     )
                 }
             }
+            .onChange(of: catalogModel.products.data) { _, newValue in
+                searchViewModel.allProducts = newValue
+            }
             .overlay(alignment: .bottom) {
                 HStack {
                     searchButtonView(isPresented: $isSearchPresented)
