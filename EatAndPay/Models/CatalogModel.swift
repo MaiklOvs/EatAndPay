@@ -68,5 +68,24 @@ final class CatalogModel {
             print("Failed to load products list: \(error)")
         }
     }
+
+    func toggleFavorite(for productId: String) async {
+        guard let index = products.data.firstIndex(where: { $0.id == productId }) else { return }
+        let product = products.data[index]
+        let makeFavorite = !product.isFavorite
+
+        do {
+            if makeFavorite {
+                try await networkService.addToFavorites(productId: productId)
+            } else {
+                try await networkService.removeFromFavorites(productId: productId)
+            }
+            var updated = product
+            updated.isFavorite = makeFavorite
+            products.data[index] = updated
+        } catch {
+            print("Failed to toggle favorite: \(error)")
+        }
+    }
 }
 

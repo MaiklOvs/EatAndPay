@@ -10,9 +10,22 @@ import DesignSystem
 
 struct CardDetailsView: View {
 
-    @Bindable var viewModel: ProductCardViewModel
+    @State private var viewModel = ProductCardViewModel(networkService: NetworkServicesImpl())
     @Bindable var cartViewModel: CartViewModel
+    let productId: String
+    let onFavoriteToggle: () -> Void
+    @State private var isFavorite = false
     @Environment(\.dismiss) private var dismiss
+
+    init(
+        productId: String,
+        cartViewModel: CartViewModel,
+        onFavoriteToggle: @escaping () -> Void
+    ) {
+        self.productId = productId
+        self.cartViewModel = cartViewModel
+        self.onFavoriteToggle = onFavoriteToggle
+    }
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -36,14 +49,11 @@ struct CardDetailsView: View {
                     .frame(width: 297, height: 39, alignment: .leading)
                 Spacer()
                 Button {
+                    isFavorite.toggle()
+                    onFavoriteToggle()
                 } label: {
-                    if viewModel.productCard?.isFavorite ?? false {
-                        Image(.isFavorite)
-                            .frame(width: 44, height: 44)
-                    } else {
-                        Image(.heart)
-                            .frame(width: 44, height: 44)
-                    }
+                    Image(isFavorite ? .isFavorite : .heart)
+                        .frame(width: 44, height: 44)
                 }
             }
             HStack(spacing: 10) {
@@ -78,21 +88,38 @@ struct CardDetailsView: View {
                 .font(DSTypography.descriptionTitle)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             AddToCartButton(
-                action: { cartViewModel.add(
-                    productId: viewModel.productCard?.id ?? "",
-                    price: viewModel.productCard?.price ?? 0
-                )
-                    dismiss()
+                action: {
+                    if let product = viewModel.productCard {
+                        cartViewModel.add(
+                            product: ProductPreviewModel(
+                                id: product.id,
+                                image: product.image,
+                                name: product.name,
+                                weight: product.weight,
+                                price: product.price,
+                                rating: product.rating,
+                                reviewCount: 0,
+                                isFavorite: product.isFavorite,
+                                discount: product.discount
+                            )
+                        )
+                        dismiss()
+                    }
                 }
             )
         }
         .padding(.horizontal, 12)
+        .task(id: productId) {
+            await viewModel.loadProductDetails(id: productId)
+            isFavorite = viewModel.productCard?.isFavorite ?? false
+        }
     }
 }
 
 #Preview {
     CardDetailsView(
-        viewModel: ProductCardViewModel(networkService: NetworkServicesImpl()),
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+        productId: "",
+        cartViewModel: CartViewModel(networkService: NetworkServicesImpl()),
+        onFavoriteToggle: {  }
     )
 }

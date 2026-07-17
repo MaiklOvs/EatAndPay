@@ -15,4 +15,6 @@ protocol NetworkServices {
     func fetchProductDetails(query: Operations.get_sol_products_sol__lcub_id_rcub_.Input) async throws -> Components.Schemas.Product
     func addItemInCart(query: String) async throws -> Operations.post_sol_cart_sol_items.Output.Ok.Body.jsonPayload
     func removeItemInCart(query: String) async throws -> Operations.delete_sol_cart_sol_items_sol__lcub_id_rcub_.Output.Ok.Body.jsonPayload
+    func addToFavorites(productId: String) async throws -> Operations.post_sol_products_sol__lcub_id_rcub__sol_favourite.Output.Ok
+    func removeFromFavorites(productId: String) async throws -> Operations.delete_sol_products_sol__lcub_id_rcub__sol_favourite.Output.Ok
 }

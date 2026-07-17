@@ -9,7 +9,7 @@
 struct Products {
     let currentPage: Int
     let totalPages: Int
-    let data: [ProductPreviewModel]
+    var data: [ProductPreviewModel]
 }
 
 struct ProductPreviewModel: Codable, Identifiable {
@@ -20,6 +20,6 @@ struct ProductPreviewModel: Codable, Identifiable {
     let price: Int
     let rating: Float
     let reviewCount: Int
-    let isFavorite: Bool
+    var isFavorite: Bool
     let discount: Double?
 }

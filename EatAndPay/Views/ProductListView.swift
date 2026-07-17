@@ -37,6 +37,11 @@ struct ProductListView: View {
         ProductGridView(
             productPreviewModel: catalogModel.products.data,
             title: name,
+            onFavoriteToggle: { productId in
+                Task {
+                    await catalogModel.toggleFavorite(for: productId)
+                }
+            },
             cartViewModel: cartViewModel
         )
         .overlay(alignment: .bottom) {
@@ -58,6 +63,14 @@ struct ProductListView: View {
         }
         .sheet(isPresented: $isSearchPresented) {
             SearchView(
+                onFavoriteToggle: { productId in
+                    Task {
+                        await catalogModel.toggleFavorite(for: productId)
+                    }
+                    if let index = searchViewModel.allProducts.firstIndex(where: { $0.id == productId }) {
+                        searchViewModel.allProducts[index].isFavorite.toggle()
+                    }
+                },
                 searchViewModel: searchViewModel,
                 cartViewModel: cartViewModel
             )

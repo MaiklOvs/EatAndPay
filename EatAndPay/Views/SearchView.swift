@@ -10,6 +10,7 @@ import DesignSystem
 
 struct SearchView: View {
 
+    let onFavoriteToggle: (String) -> Void
     @Bindable var searchViewModel: SearchViewModel
     @Bindable var cartViewModel: CartViewModel
     @State private var isSearchBarFocused = false
@@ -66,6 +67,9 @@ struct SearchView: View {
                             ForEach(searchViewModel.results) { result in
                                 ProductCardView(
                                     product: result,
+                                    onFavoriteToggle: {
+                                        onFavoriteToggle(result.id)
+                                    },
                                     cartViewModel: cartViewModel
                                 )
                             }
@@ -90,6 +94,7 @@ struct SearchView: View {
 
 #Preview {
     SearchView(
+        onFavoriteToggle: { _ in },
         searchViewModel: SearchViewModel(allProducts: [
             ProductPreviewModel(
                 id: "",

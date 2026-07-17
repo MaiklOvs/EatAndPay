@@ -13,6 +13,7 @@ struct ProductGridView: View {
     let productPreviewModel: [ProductPreviewModel]
     let title: String
 
+    let onFavoriteToggle: (String) -> Void
     @Bindable var cartViewModel: CartViewModel
     @State private var selectedProduct: ProductPreviewModel?
 
@@ -36,6 +37,9 @@ struct ProductGridView: View {
                 ForEach(productPreviewModel) { data in
                     ProductCardView(
                         product: data,
+                        onFavoriteToggle: {
+                            onFavoriteToggle(data.id)
+                        },
                         cartViewModel: cartViewModel
                     )
                     .onTapGesture {
@@ -47,7 +51,11 @@ struct ProductGridView: View {
         }
         .sheet(item: $selectedProduct) { product in
             let viewModel = ProductCardViewModel(networkService: NetworkServicesImpl())
-            CardDetailsView(viewModel: viewModel, cartViewModel: cartViewModel)
+            CardDetailsView(
+                productId: product.id,
+                cartViewModel: cartViewModel,
+                onFavoriteToggle: { onFavoriteToggle(product.id) }
+            )
                 .task(id: product.id) {
                     await viewModel.loadProductDetails(id: product.id)
                 }
@@ -61,6 +69,7 @@ struct ProductGridView: View {
     ProductGridView(
         productPreviewModel: [],
         title: "Выпечка",
+        onFavoriteToggle: { _ in },
         cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
     )
 }

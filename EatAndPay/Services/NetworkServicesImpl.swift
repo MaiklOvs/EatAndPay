@@ -82,6 +82,34 @@ final class NetworkServicesImpl: NetworkServices {
         }
     }
 
+    func addToFavorites(productId: String) async throws -> Operations.post_sol_products_sol__lcub_id_rcub__sol_favourite.Output.Ok {
+        let response = try await client.post_sol_products_sol__lcub_id_rcub__sol_favourite(Operations.post_sol_products_sol__lcub_id_rcub__sol_favourite.Input(path: Operations.post_sol_products_sol__lcub_id_rcub__sol_favourite.Input.Path(id: productId)))
+        switch response {
+        case .ok(let okResponse):
+            return okResponse
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        case .notFound(_):
+            throw NetworkError.notFound
+        }
+    }
+
+    func removeFromFavorites(productId: String) async throws ->  Operations.delete_sol_products_sol__lcub_id_rcub__sol_favourite.Output.Ok {
+        let response = try await client.delete_sol_products_sol__lcub_id_rcub__sol_favourite(Operations.delete_sol_products_sol__lcub_id_rcub__sol_favourite.Input(path: Operations.delete_sol_products_sol__lcub_id_rcub__sol_favourite.Input.Path(id: productId)))
+        switch response {
+        case .ok(let okResponse):
+            return okResponse
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        case .notFound(_):
+            throw NetworkError.notFound
+        }
+    }
+
     func fetchProductDetails(query: Operations.get_sol_products_sol__lcub_id_rcub_.Input) async throws -> Components.Schemas.Product {
         let response = try await client.get_sol_products_sol__lcub_id_rcub_(query)
         switch response {

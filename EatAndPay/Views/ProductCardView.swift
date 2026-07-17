@@ -11,6 +11,7 @@ import DesignSystem
 struct ProductCardView: View {
 
     let product: ProductPreviewModel
+    let onFavoriteToggle: () -> Void
     @Bindable var cartViewModel: CartViewModel
 
     var body: some View {
@@ -26,6 +27,7 @@ struct ProductCardView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay(alignment: .topTrailing) {
                 Button {
+                    onFavoriteToggle()
                 } label: {
                     if product.isFavorite {
                         Image(.isFavorite)
@@ -79,6 +81,7 @@ struct ProductCardView: View {
                             isFavorite: false,
                             discount: 100
                         ),
+                    onFavoriteToggle: {  },
                     cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
     )
 }

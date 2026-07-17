@@ -92,9 +92,13 @@ struct CatalogView: View {
                     ProductGridView(
                         productPreviewModel: catalogModel.products.data.filter { $0.isFavorite },
                         title: "Избранное",
+                        onFavoriteToggle: { productId in
+                            Task {
+                                await catalogModel.toggleFavorite(for: productId)
+                            }
+                        },
                         cartViewModel: cartViewModel
                     )
-                    .padding(.horizontal, 12)
                 }
             }
             .overlay(alignment: .bottom) {
@@ -112,6 +116,14 @@ struct CatalogView: View {
             }
             .sheet(isPresented: $isSearchPresented) {
                 SearchView(
+                    onFavoriteToggle: { productId in
+                        Task {
+                            await catalogModel.toggleFavorite(for: productId)
+                        }
+                        if let index = searchViewModel.allProducts.firstIndex(where: { $0.id == productId }) {
+                            searchViewModel.allProducts[index].isFavorite.toggle()
+                        }
+                    },
                     searchViewModel: searchViewModel,
                     cartViewModel: cartViewModel
                 )
