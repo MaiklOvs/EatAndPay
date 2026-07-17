@@ -34,7 +34,7 @@ struct SearchView: View {
                                 searchViewModel.searchText = query
                             } label: {
                                 Text(query)
-                                    .font(DSTypography.seatchTitle)
+                                    .font(DSTypography.searchTitle)
                                     .foregroundStyle(.black)
                                     .lineLimit(1)
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -48,7 +48,7 @@ struct SearchView: View {
                                 searchViewModel.searchText = suggestion
                             } label: {
                                 Text(suggestion)
-                                    .font(DSTypography.seatchTitle)
+                                    .font(DSTypography.searchTitle)
                                     .foregroundStyle(.black)
                                     .lineLimit(1)
                                     .frame(maxWidth: .infinity, alignment: .leading)

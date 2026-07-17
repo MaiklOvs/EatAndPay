@@ -31,7 +31,7 @@ public enum DSTypography {
 
     public static let descriptionTitle: Font = .custom(interFamilyName, size: 20).weight(.bold)
 
-    public static let seatchTitle: Font = .custom(interFamilyName, size: 18).weight(.bold)
+    public static let searchTitle: Font = .custom(interFamilyName, size: 18).weight(.bold)
 
     // MARK: - Body
 
