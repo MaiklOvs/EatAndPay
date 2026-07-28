@@ -13,14 +13,17 @@ public struct AddToCartButton: View {
 
     private let action: () -> Void
 
-    public init(action: @escaping () -> Void) {
+    private let buttonTitle: String
+
+    public init(action: @escaping () -> Void, buttonTitle: String = "В корзину") {
         self.action = action
+        self.buttonTitle = buttonTitle
     }
 
     public var body: some View {
         Button(action: action) {
             HStack {
-                Text("В корзину")
+                Text(buttonTitle)
                     .font(.system(size: 24, weight: .semibold))
             }
             .foregroundStyle(.white)

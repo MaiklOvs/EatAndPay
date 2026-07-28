@@ -15,6 +15,7 @@ struct CardDetailsView: View {
     let productId: String
     let onFavoriteToggle: () -> Void
     @State private var isFavorite = false
+    @State private var isReviewsPresented = false
     @Environment(\.dismiss) private var dismiss
 
     init(
@@ -64,25 +65,37 @@ struct CardDetailsView: View {
                     .foregroundStyle(DSColors.textSecondary)
             }
             .frame(width: 294, height: 30, alignment: .leading)
-            HStack(spacing: 10) {
-                HStack(spacing: 6) {
-                    Text(viewModel.productCard?.rating.formatted() ?? "")
-                        .font(DSTypography.cardDetailsTitle)
-                    ForEach(0..<Int(ceil(viewModel.productCard?.rating ?? 5)), id: \.self) { _ in
-                        Image(.star)
+            Button {
+                isReviewsPresented = true
+            } label: {
+                HStack(spacing: 10) {
+                    HStack(spacing: 6) {
+                        Text(viewModel.productCard?.rating.formatted() ?? "")
+                            .font(DSTypography.cardDetailsTitle)
+                        ForEach(0..<Int(ceil(viewModel.productCard?.rating ?? 5)), id: \.self) { _ in
+                            Image(.star)
+                                .renderingMode(.template)
+                                .foregroundStyle(Color.primary)
+                        }
+                    }
+                    HStack(spacing: 6) {
+                        Image(.messages)
                             .renderingMode(.template)
                             .foregroundStyle(Color.primary)
+                        Text("\(viewModel.productCard?.reviews?.count.formatted() ?? " 0")  отзывов")
+                            .font(DSTypography.cardDetailsTitle)
                     }
                 }
-                HStack(spacing: 6) {
-                    Image(.messages)
-                        .renderingMode(.template)
-                        .foregroundStyle(Color.primary)
-                    Text("\(viewModel.productCard?.reviews?.count.formatted() ?? " 0")  отзывов")
-                        .font(DSTypography.cardDetailsTitle)
-                }
+                .frame(width: 351, height: 30, alignment: .leading)
             }
-            .frame(width: 351, height: 30, alignment: .leading)
+            .buttonStyle(.plain)
+            .sheet(isPresented: $isReviewsPresented) {
+                NewReviewsView(
+                    productId: productId,
+                    cartViewModel: cartViewModel,
+                    onFavoriteToggle: onFavoriteToggle
+                )
+            }
 
             Text(viewModel.productCard?.description ?? "")
                 .font(DSTypography.descriptionTitle)
