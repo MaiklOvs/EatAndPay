@@ -12,6 +12,7 @@ final class NetworkServicesImpl: NetworkServices {
 
     let client = Client(
         serverURL: URL(string: "https://eat-and-pay.t02.ru")!,
+        configuration: ClientConfiguration.make(),
         transport: URLSessionTransport(),
         middlewares: [AuthenticationMiddleware(bearerToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJta29uZGFrb3ZhIiwiaWF0IjoxNzgyOTIyMDM3LCJqdGkiOiJlYjU1MTNkZi1jM2FmLTQ5NjktOWU5OC03MGJkNThmNDQyYmQiLCJuaWNrbmFtZSI6Im92c3lhbm5pa292Lm1pa2hhaWwiLCJpc1RlYWNoZXIiOnRydWV9.OmbqPS-YyVyYbajz2rJDTuZTuLX8riGQkF2XdxyiWO_t76QB-6FEEgpzstlj1TM9weoq-XS_B-R7dhjW_amnOi6tsnV9xN_a0F8B-9KJOMosfX_QsF645byDMwE5ZYNxhLPW0bWXa3qc1-h4gAhm1Gdtz25Aiy6sX5dy05UrvUPOTrbI_g1FJrIGP2kHHkUX6MQ1fgST5nTqjPnEn5wx26lh6DmLoHL4eyCGeXxquRxAujPA8K0PA2-L3Wrdz3UIeElP9XfAJZRpU9OcSyXYH5J-A96gINFkSdEZ5CZlWpt99_n3Bc_sCbJUzHX3OsgLRW3fF-gkn6cD-5g-2jEZ0Q")]
     )
@@ -121,6 +122,36 @@ final class NetworkServicesImpl: NetworkServices {
             throw NetworkError.unexpectedStatus(statusCode)
         case .notFound(_):
             throw NetworkError.notFound
+        }
+    }
+
+    func addReviews(
+        productId: String,
+        rating: Int,
+        content: String,
+        images: [String]
+    ) async throws -> Operations.post_sol_products_sol__lcub_id_rcub__sol_reviews.Output.Ok {
+        let response = try await client.post_sol_products_sol__lcub_id_rcub__sol_reviews(
+            Operations.post_sol_products_sol__lcub_id_rcub__sol_reviews.Input(
+                path: Operations.post_sol_products_sol__lcub_id_rcub__sol_reviews.Input.Path(id: productId),
+                body: .json(
+                    Operations.post_sol_products_sol__lcub_id_rcub__sol_reviews.Input.Body.jsonPayload(
+                        rating: rating,
+                        content: content,
+                        images: images
+                    )
+                )
+            )
+        )
+        switch response {
+        case .ok(let okResponse):
+            return okResponse
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        case .badRequest:
+            throw NetworkError.badRequest
         }
     }
 }

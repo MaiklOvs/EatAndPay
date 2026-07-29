@@ -10,21 +10,14 @@ import DesignSystem
 
 struct NewReviewsView: View {
 
-    @State private var viewModel = ProductCardViewModel(networkService: NetworkServicesImpl())
+    private var viewModel: ProductCardViewModel
     @State private var text: String = ""
-    @Bindable var cartViewModel: CartViewModel
-    let productId: String
-    let onFavoriteToggle: () -> Void
+    @State private var selectedRating: Int = 0
+
     @Environment(\.dismiss) private var dismiss
 
-    init(
-        productId: String,
-        cartViewModel: CartViewModel,
-        onFavoriteToggle: @escaping () -> Void
-    ) {
-        self.productId = productId
-        self.cartViewModel = cartViewModel
-        self.onFavoriteToggle = onFavoriteToggle
+    init(viewModel: ProductCardViewModel) {
+        self.viewModel = viewModel
     }
 
     var body: some View {
@@ -32,6 +25,8 @@ struct NewReviewsView: View {
             HStack {
                 Text("Отзыв о товаре")
                     .font(DSTypography.hugeTitle)
+                    .padding(.top, 12)
+                    .padding(.leading, 12)
                 Spacer()
                 CloseButton(action: { dismiss() } )
             }
@@ -43,13 +38,18 @@ struct NewReviewsView: View {
                 .frame(width: 80, height: 80)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 VStack {
-                    HStack {
-                        Text(viewModel.productCard?.name ?? "Бутер с колбасой")
-                        Text("\(viewModel.productCard?.weight.formatted() ?? "100") г")
+                    HStack(alignment: .top, spacing: 8) {
+                        Text(viewModel.productCard?.name ?? "")
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Text("\(viewModel.productCard?.weight.formatted() ?? "") г")
                             .foregroundStyle(DSColors.textSecondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    Text(viewModel.productCard?.description ?? "Белый хлеб")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text(viewModel.productCard?.description ?? "")
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
@@ -58,13 +58,13 @@ struct NewReviewsView: View {
             HStack {
                 ForEach(1...5, id: \.self) { star in
                     Button {
-
+                        selectedRating = star
                     } label: {
-                        Image(systemName: "star")
+                        Image(systemName: star <= selectedRating ? "star.fill" : "star")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 32, height: 32)
-                            .foregroundStyle(DSColors.textSecondary)
+                            .foregroundStyle(star <= selectedRating ? .black : DSColors.textSecondary)
                     }
                 }
             }
@@ -117,19 +117,24 @@ struct NewReviewsView: View {
             }
             Spacer()
             Text("Соглашаюсь с правилами публикации")
-            AddToCartButton(action: {}, buttonTitle: "Оставить отзыв")
+            DSButton(
+                action: {
+                    Task {
+                        await viewModel.addReview(
+                            id: viewModel.productCard?.id ?? "",
+                            rating: selectedRating,
+                            content: text
+                        )
+                        dismiss()
+                    }
+                },
+                buttonTitle: "Оставить отзыв"
+            )
         }
         .padding(.horizontal, 12)
-        .task(id: productId) {
-            await viewModel.loadProductDetails(id: productId)
-        }
     }
 }
 
 #Preview {
-    NewReviewsView(
-        productId: "",
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl()),
-        onFavoriteToggle: {  }
-    )
+    NewReviewsView(viewModel: ProductCardViewModel(networkService: NetworkServicesImpl()))
 }

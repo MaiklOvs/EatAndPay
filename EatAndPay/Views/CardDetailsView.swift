@@ -90,17 +90,15 @@ struct CardDetailsView: View {
             }
             .buttonStyle(.plain)
             .sheet(isPresented: $isReviewsPresented) {
-                NewReviewsView(
-                    productId: productId,
-                    cartViewModel: cartViewModel,
-                    onFavoriteToggle: onFavoriteToggle
+                ReviewsView(
+                    viewModel: viewModel
                 )
             }
 
             Text(viewModel.productCard?.description ?? "")
                 .font(DSTypography.descriptionTitle)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            AddToCartButton(
+            DSButton(
                 action: {
                     if let product = viewModel.productCard {
                         cartViewModel.add(

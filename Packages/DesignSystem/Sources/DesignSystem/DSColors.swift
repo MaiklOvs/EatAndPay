@@ -62,6 +62,22 @@ public enum DSColors {
         endPoint: .trailing
     )
 
+    /// Градиент кнопки добавления отзыва
+    public static let lightGradient = LinearGradient(
+        stops: [
+            .init(color: Color(red: 0.996, green: 0.945, blue: 0.984), location: 0.0049),
+            .init(color: Color(red: 0.992, green: 0.945, blue: 0.988), location: 0.1488),
+            .init(color: Color(red: 0.988, green: 0.941, blue: 0.988), location: 0.2927),
+            .init(color: Color(red: 0.984, green: 0.941, blue: 0.992), location: 0.4314),
+            .init(color: Color(red: 0.976, green: 0.937, blue: 0.992), location: 0.5702),
+            .init(color: Color(red: 0.973, green: 0.933, blue: 0.996), location: 0.7089),
+            .init(color: Color(red: 0.965, green: 0.933, blue: 0.996), location: 0.8476),
+            .init(color: Color(red: 0.957, green: 0.929, blue: 1.000), location: 0.9915),
+        ],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+
     // MARK: - Text
 
     /// Основной текст

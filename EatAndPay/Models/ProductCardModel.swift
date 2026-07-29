@@ -31,11 +31,12 @@ final class ProductCardViewModel {
                 description: product.description,
                 isFavorite: product.isFavorite,
                 discount: product.discount,
-                reviews: product.reviews?.map { item in
+                reviews: product.reviews?.enumerated().map { index, item in
                     Review(
+                        id: "\(item.author)_\(item.createdAt)_\(index)",
                         rating: item.rating,
                         author: item.author,
-                        createdAt: item.createdAt,
+                        createdAt: item.createdAt.formatted(),
                         content: item.content,
                         images: item.images
                     )
@@ -44,6 +45,25 @@ final class ProductCardViewModel {
 
         } catch {
             print("Failed to load products list: \(error)")
+        }
+    }
+
+    func addReview(
+        id: String,
+        rating: Int,
+        content: String,
+        images: [String] = []
+    ) async {
+        do {
+            _ = try await networkService.addReviews(
+                productId: id,
+                rating: rating,
+                content: content,
+                images: images
+            )
+            await loadProductDetails(id: id)
+        } catch {
+            print("Failed to add review: \(error)")
         }
     }
 }
@@ -62,10 +82,11 @@ struct ProductCardModel: Codable, Identifiable {
     let reviews: [Review]?
 }
 
-struct Review: Codable {
+struct Review: Codable, Hashable, Identifiable {
+    let id: String
     let rating: Int
     let author: String
-    let createdAt: Date
+    let createdAt: String
     let content: String
     let images: [String]
 }

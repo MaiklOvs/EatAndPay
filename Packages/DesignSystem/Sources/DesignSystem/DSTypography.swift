@@ -29,6 +29,8 @@ public enum DSTypography {
 
     public static let hugeTitle: Font = .custom(interFamilyName, size: 32).weight(.bold)
 
+    public static let estimationHuge: Font = .custom(interFamilyName, size: 94).weight(.bold)
+
     public static let descriptionTitle: Font = .custom(interFamilyName, size: 20).weight(.bold)
 
     public static let searchTitle: Font = .custom(interFamilyName, size: 18).weight(.bold)
