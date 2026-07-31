@@ -64,6 +64,7 @@ final class CatalogModel {
                     )
                 }
             )
+            print("loadProductsList called for category: \(query.category ?? "all")")
         } catch {
             print("Failed to load products list: \(error)")
         }

@@ -27,7 +27,7 @@ struct CatalogView: View {
                 isPresented.wrappedValue = true
             }
             .padding(.bottom, 12)
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            .frame(height: 50)
         }
     }
 
@@ -107,8 +107,10 @@ struct CatalogView: View {
             .overlay(alignment: .bottom) {
                 HStack {
                     searchButtonView(isPresented: $isSearchPresented)
+                        .frame(height: 50)
                     Spacer()
                     checkoutButtonView(isPresented: $isCartPresented)
+                        .frame(height: 50)
                 }
                 .padding(.horizontal, 12)
                 .padding(.bottom, 12)

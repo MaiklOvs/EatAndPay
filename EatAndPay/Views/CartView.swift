@@ -43,6 +43,8 @@ struct CartView: View {
                     .padding(.top, 10)
                 Spacer()
                 CloseButton(action: { dismiss() } )
+                    .padding(.trailing, 20)
+                    .padding(.top, 10)
             }
 
             HStack {
@@ -81,6 +83,7 @@ struct CartView: View {
             )
         }
         .padding(.horizontal, 12)
+        .padding(.top, 10)
         .task {
             await cartViewModel.loadCart()
         }

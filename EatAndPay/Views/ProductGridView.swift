@@ -29,25 +29,28 @@ struct ProductGridView: View {
                 .padding(.leading, 12)
             LazyVGrid(
                 columns: [
-                    GridItem(.flexible(), spacing: 3),
-                    GridItem(.flexible(), spacing: 3)
+                    GridItem(.fixed(174), spacing: 10),
+                    GridItem(.fixed(174), spacing: 10)
                 ],
                 spacing: 16
             ) {
                 ForEach(productPreviewModel) { data in
-                    ProductCardView(
-                        product: data,
-                        onFavoriteToggle: {
-                            onFavoriteToggle(data.id)
-                        },
-                        cartViewModel: cartViewModel
-                    )
-                    .onTapGesture {
+                    Button {
                         selectedProduct = data
+                    } label: {
+                        ProductCardView(
+                            product: data,
+                            onFavoriteToggle: {
+                                onFavoriteToggle(data.id)
+                            },
+                            cartViewModel: cartViewModel
+                        )
                     }
+                    .buttonStyle(.plain)
+                    .id(data.id)
                 }
             }
-            .padding(10)
+//            .padding(.horizontal, 10)
         }
         .sheet(item: $selectedProduct) { product in
             CardDetailsView(

@@ -30,6 +30,7 @@ public struct CloseButton: View {
                     .rotationEffect(.degrees(-45))
             }
             .frame(width: 24, height: 24)
+            .contentShape(Rectangle())
         }
     }
 }

@@ -29,10 +29,19 @@ struct CardDetailsView: View {
     }
 
     var body: some View {
+        let _ = print("CardDetailsView image: \(viewModel.productCard?.image ?? "nil")")
         VStack(alignment: .leading) {
             AsyncImage(url: URL(string: viewModel.productCard?.image ?? "")) { image in
-                image.image?.resizable()
-                    .aspectRatio(contentMode: .fill)
+                switch image {
+                case .success:
+                    image.image?.resizable()
+                        .aspectRatio(contentMode: .fill)
+                case .failure(let error):
+                    let _ = print("ProductCardView AsyncImage error: \(error)")
+                    DSImagePlaceholder()
+                default:
+                    DSImagePlaceholder()
+                }
             }
             .frame(width: 375, height: 440)
             .overlay {
@@ -95,9 +104,12 @@ struct CardDetailsView: View {
                 )
             }
 
-            Text(viewModel.productCard?.description ?? "")
-                .font(DSTypography.descriptionTitle)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(viewModel.productCard?.description ?? "")
+                    .font(DSTypography.descriptionTitle)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer()
+            }
             DSButton(
                 action: {
                     if let product = viewModel.productCard {

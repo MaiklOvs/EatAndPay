@@ -17,11 +17,22 @@ struct ProductCardView: View {
     var body: some View {
         let quantity = cartViewModel.quantity(for: product.id)
         let displayedPrice = quantity > 0 ? product.price * quantity : product.price
-
+        let _ = print("ProductCardView image: \(product.image)")
         VStack(alignment: .leading) {
-            AsyncImage(url: URL(string: product.image)) { image in
-                image.image?.resizable()
-                    .aspectRatio(174.0 / 200.0, contentMode: .fill)
+            AsyncImage(url: URL(string: product.image)) { phase in
+                switch phase {
+                case .empty:
+                    ProgressView()
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                case .failure(let error):
+                    let _ = print("ProductCardView AsyncImage error: \(error)")
+                    DSImagePlaceholder()
+                @unknown default:
+                    DSImagePlaceholder()
+                }
             }
             .frame(width: 174, height: 256)
             .clipShape(RoundedRectangle(cornerRadius: 20))
@@ -64,7 +75,9 @@ struct ProductCardView: View {
                 onDecrement: { cartViewModel.remove(product: product) },
                 onIncrement: { cartViewModel.add(product: product) }
             )
+            .padding(.bottom, 10)
         }
+        .frame(width: 174, height: 355)
     }
 }
 
