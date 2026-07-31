@@ -44,17 +44,17 @@ struct ProductListView: View {
             },
             cartViewModel: cartViewModel
         )
-//        .overlay(alignment: .bottom) {
-//            HStack {
-//                SearchButton(action: {
-//                    isSearchPresented = true
-//                })
-//                Spacer()
-//                checkoutButtonView
-//            }
-//            .padding(.horizontal, 12)
-//            .padding(.bottom, 12)
-//        }
+        .overlay(alignment: .bottom) {
+            HStack {
+                SearchButton(action: {
+                    isSearchPresented = true
+                })
+                Spacer()
+                checkoutButtonView
+            }
+            .padding(.horizontal, 12)
+            .padding(.bottom, 12)
+        }
         .task {
             await catalogModel.loadProductsList(query: Operations.get_sol_products.Input.Query(category: category))
         }

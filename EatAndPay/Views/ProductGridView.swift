@@ -35,22 +35,21 @@ struct ProductGridView: View {
                 spacing: 16
             ) {
                 ForEach(productPreviewModel) { data in
-                    Button {
+                    ProductCardView(
+                        product: data,
+                        onFavoriteToggle: {
+                            onFavoriteToggle(data.id)
+                        },
+                        cartViewModel: cartViewModel
+                    )
+//                    .frame(height: 355)
+//                    .frame(maxWidth: .infinity)
+                    .onTapGesture {
                         selectedProduct = data
-                    } label: {
-                        ProductCardView(
-                            product: data,
-                            onFavoriteToggle: {
-                                onFavoriteToggle(data.id)
-                            },
-                            cartViewModel: cartViewModel
-                        )
                     }
-                    .buttonStyle(.plain)
-                    .id(data.id)
+                    .padding(.horizontal, 10)
                 }
             }
-//            .padding(.horizontal, 10)
         }
         .sheet(item: $selectedProduct) { product in
             CardDetailsView(
