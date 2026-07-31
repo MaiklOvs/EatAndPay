@@ -42,6 +42,8 @@ struct ProductGridView: View {
                         },
                         cartViewModel: cartViewModel
                     )
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 10)
                     .onTapGesture {
                         selectedProduct = data
                     }

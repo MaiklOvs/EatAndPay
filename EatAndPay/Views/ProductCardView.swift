@@ -26,7 +26,6 @@ struct ProductCardView: View {
                 case .success(let image):
                     image
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
                 case .failure(let error):
                     let _ = print("ProductCardView AsyncImage error: \(error)")
                     DSImagePlaceholder()
@@ -34,7 +33,8 @@ struct ProductCardView: View {
                     DSImagePlaceholder()
                 }
             }
-            .frame(width: 174, height: 256)
+            .frame(maxWidth: .infinity, minHeight: 256, maxHeight: 300)
+            .aspectRatio(contentMode: .fit)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay(alignment: .topTrailing) {
                 Button {
@@ -77,6 +77,7 @@ struct ProductCardView: View {
             )
             .padding(.bottom, 10)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
