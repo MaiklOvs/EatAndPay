@@ -29,8 +29,8 @@ struct ProductGridView: View {
                 .padding(.leading, 12)
             LazyVGrid(
                 columns: [
-                    GridItem(.fixed(174), spacing: 10),
-                    GridItem(.fixed(174), spacing: 10)
+                    GridItem(.flexible(), spacing: 10),
+                    GridItem(.flexible(), spacing: 10)
                 ],
                 spacing: 16
             ) {
@@ -42,12 +42,9 @@ struct ProductGridView: View {
                         },
                         cartViewModel: cartViewModel
                     )
-//                    .frame(height: 355)
-//                    .frame(maxWidth: .infinity)
                     .onTapGesture {
                         selectedProduct = data
                     }
-                    .padding(.horizontal, 10)
                 }
             }
         }

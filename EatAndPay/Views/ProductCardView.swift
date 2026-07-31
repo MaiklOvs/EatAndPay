@@ -77,7 +77,6 @@ struct ProductCardView: View {
             )
             .padding(.bottom, 10)
         }
-        .frame(width: 174, height: 355)
     }
 }
 
