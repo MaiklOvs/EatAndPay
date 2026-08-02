@@ -9,9 +9,20 @@ import SwiftUI
 
 @main
 struct EatAndPayApp: App {
+    @State private var isLoading = true
+
     var body: some Scene {
         WindowGroup {
-            CatalogView()
+            if isLoading {
+                SplashView()
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            isLoading = false
+                        }
+                    }
+            } else {
+                CatalogView()
+            }
         }
     }
 }

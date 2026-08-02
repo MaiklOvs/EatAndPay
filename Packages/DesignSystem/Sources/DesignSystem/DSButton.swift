@@ -15,6 +15,7 @@ public struct DSButton: View {
     public enum Style {
         case accent      // фиолетовый градиент, белый текст
         case light       // светлый градиент, тёмный текст
+        case white       // белый фон, фиолетовый цвет
     }
 
     private let action: () -> Void
@@ -28,6 +29,8 @@ public struct DSButton: View {
             return DSColors.accentGradient
         case .light:
             return DSColors.lightGradient
+        case .white:
+            return .linearGradient(colors: [.white], startPoint: .leading, endPoint: .trailing)
         }
     }
 
@@ -37,6 +40,8 @@ public struct DSButton: View {
             return .white
         case .light:
             return .black
+        case .white:
+            return DSColors.reviewSuccessButtonTitle
         }
     }
 

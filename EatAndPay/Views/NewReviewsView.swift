@@ -11,13 +11,18 @@ import DesignSystem
 struct NewReviewsView: View {
 
     private var viewModel: ProductCardViewModel
+    private let onSuccess: () -> Void
     @State private var text: String = ""
     @State private var selectedRating: Int = 0
 
     @Environment(\.dismiss) private var dismiss
 
-    init(viewModel: ProductCardViewModel) {
+    init(
+        viewModel: ProductCardViewModel,
+        onSuccess: @escaping () -> Void = {}
+    ) {
         self.viewModel = viewModel
+        self.onSuccess = onSuccess
     }
 
     var body: some View {
@@ -125,6 +130,7 @@ struct NewReviewsView: View {
                             rating: selectedRating,
                             content: text
                         )
+                        onSuccess()
                         dismiss()
                     }
                 },

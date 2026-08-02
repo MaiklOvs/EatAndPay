@@ -19,6 +19,9 @@ public enum DSTypography {
     /// Имя кастомного шрифта Inter
     private static let interFamilyName = "Inter"
 
+    /// Имя кастомного шрифта ALS Hauss VF
+    private static let alsHaussFamilyName = "ALSHaussVF-Light"
+
     // MARK: - Headlines
 
     /// Название продукта в карточке товара
@@ -29,11 +32,19 @@ public enum DSTypography {
 
     public static let hugeTitle: Font = .custom(interFamilyName, size: 32).weight(.bold)
 
-    public static let estimationHuge: Font = .custom(interFamilyName, size: 94).weight(.bold)
+    public static let authorReviewTitle: Font = .custom(interFamilyName, size: 14).weight(.medium)
+    public static let dateReviewTitle: Font = .custom(interFamilyName, size: 14).weight(.medium)
+
+    /// Большая оценка (например, рейтинг товара)
+    /// ALS Hauss VF Light, 94px, letter-spacing -4%
+    public static let estimationHuge: Font = .custom(alsHaussFamilyName, size: 94)
 
     public static let descriptionTitle: Font = .custom(interFamilyName, size: 20).weight(.bold)
 
     public static let searchTitle: Font = .custom(interFamilyName, size: 18).weight(.bold)
+
+    public static let reviewSuccessTitle: Font = .custom(alsHaussFamilyName, size: 56)
+    public static let reviewSuccessSubtitle: Font = .custom(alsHaussFamilyName, size: 22)
 
     // MARK: - Body
 

@@ -44,6 +44,22 @@ public enum DSColors {
         opacity: 0.76
     )
 
+    /// Цвет подзаголовка на экране успеха добавления отзыва
+    public static let reviewSuccessSubtitle = Color(
+        red: 1,
+        green: 1,
+        blue: 1,
+        opacity: 0.7
+    )
+
+    /// Цвет текста кнопки закрытия экрана успеха добавления отзыва
+    public static let reviewSuccessButtonTitle = Color(
+        red: 154 / 255,
+        green: 16 / 255,
+        blue: 240 / 255,
+        opacity: 1
+    )
+
     // MARK: - Gradient
 
     /// Градиент кнопки добавления в корзину

@@ -12,6 +12,7 @@ struct ReviewsView: View {
 
     private var viewModel: ProductCardViewModel
     @State private var isReviewsPresented = false
+    @State private var isSuccessPresented = false
     @Environment(\.dismiss) private var dismiss
 
     private let dateFormatter: DateFormatter = {
@@ -26,16 +27,28 @@ struct ReviewsView: View {
         isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
         if let date = isoFormatter.date(from: dateString) {
+            let result = dateFormatter.string(from: date)
+            print("✅ ISO success: \(result)") // 👈 Добавьте
+            return result
+        }
+
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "dd.MM.yyyy, HH:mm"
+        inputFormatter.locale = Locale(identifier: "en_US_POSIX")
+        if let date = inputFormatter.date(from: dateString) {
             return dateFormatter.string(from: date)
         }
 
         let fallbackFormatter = DateFormatter()
         fallbackFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
         fallbackFormatter.locale = Locale(identifier: "en_US_POSIX")
-        if let date = fallbackFormatter.date(from: dateString) {
-            return dateFormatter.string(from: date)
-        }
 
+        if let date = fallbackFormatter.date(from: dateString) {
+            let result = dateFormatter.string(from: date)
+            print("✅ Fallback success: \(result)") // 👈 Добавьте
+            return result
+        }
+        print("❌ Failed: returning original \(dateString)")
         return dateString
     }
 
@@ -57,23 +70,20 @@ struct ReviewsView: View {
     }
 
     private func reviewCell(_ review: Review) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 4) {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 2) {
                 ForEach(1...5, id: \.self) { star in
-                    Image(systemName: star <= review.rating ? "star.fill" : "star")
+                    Image(systemName: "star.fill")
                         .foregroundStyle(star <= review.rating ? .black : DSColors.textSecondary)
                         .font(.system(size: 12))
                 }
-                Spacer()
-            }
-
-            HStack {
-                Text(review.author)
-                    .font(DSTypography.searchTitle)
+                Text("\(review.author),")
+                    .font(DSTypography.authorReviewTitle)
                     .foregroundStyle(DSColors.textPrimary)
+                    .padding(.leading, 6)
                 Text(formattedDate(review.createdAt))
-                    .font(DSTypography.caption)
-                    .foregroundStyle(DSColors.textSecondary)
+                    .font(DSTypography.dateReviewTitle)
+                    .foregroundStyle(DSColors.textPrimary)
                 Spacer()
             }
 
@@ -109,16 +119,19 @@ struct ReviewsView: View {
                 CloseButton(action: { dismiss() } )
                     .padding(.trailing, 12)
             }
-            HStack() {
+            HStack(alignment: .top, spacing: 0) {
                 Text(String(format: "%.1f", viewModel.productCard?.rating ?? 0))
                     .font(DSTypography.estimationHuge)
+                    .frame(width: 135, alignment: .trailing)
+                    .padding(.trailing, 8)
                     .padding(.leading, 12)
-                VStack(spacing: 4) {
+                VStack(spacing: 1) {
                     ForEach(Array(stride(from: 5, through: 1, by: -1)), id: \.self) { rating in
-                        HStack {
+                        HStack(spacing: 2) {
                             Text(String(repeating: "★", count: rating))
                                 .foregroundStyle(rating >= 4 ? .black : DSColors.textSecondary)
                                 .frame(width: 95, alignment: .trailing)
+                                .padding(.trailing, 2)
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 2)
@@ -131,12 +144,13 @@ struct ReviewsView: View {
                             }
                             .frame(width: 100, height: 1)
                             Text("\(count(for: rating))")
-                                .frame(width: 20, alignment: .trailing)
-                                .foregroundStyle(DSColors.textPrimary)
+                                .frame(width: 30, alignment: .trailing)
+                                .foregroundStyle(count(for: rating) == 0 ? DSColors.textSecondary : DSColors.textPrimary )
                         }
                     }
                 }
             }
+            .padding(.bottom, 20)
             DSButton(
                 action: { isReviewsPresented = true },
                 buttonTitle: "Написать отзыв",
@@ -144,17 +158,26 @@ struct ReviewsView: View {
             )
                 .padding(.horizontal, 12)
             ScrollView {
-                LazyVStack(spacing: 12) {
+                LazyVStack(spacing: 2) {
                     ForEach(reviews) { review in
                         reviewCell(review)
                     }
                 }
                 .padding(.horizontal, 12)
-                .padding(.top, 12)
+                .padding(.top, 24)
             }
         }
         .sheet(isPresented: $isReviewsPresented) {
-            NewReviewsView(viewModel: viewModel)
+            NewReviewsView(
+                viewModel: viewModel,
+                onSuccess: {
+                    isReviewsPresented = false
+                    isSuccessPresented = true
+                }
+            )
+        }
+        .fullScreenCover(isPresented: $isSuccessPresented) {
+            SuccessAddReviewView()
         }
     }
 }

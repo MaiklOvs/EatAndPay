@@ -12,20 +12,25 @@ import SwiftUI
 public struct CloseButton: View {
 
     private let action: () -> Void
+    private let color: Color
 
-    public init(action: @escaping () -> Void) {
+    public init(
+        action: @escaping () -> Void,
+        color: Color = .gray
+    ) {
         self.action = action
+        self.color = color
     }
 
     public var body: some View {
         Button(action: action) {
             ZStack {
                 Rectangle()
-                    .fill(Color.gray)
+                    .fill(color)
                     .frame(width: 16, height: 2)
                     .rotationEffect(.degrees(45))
                 Rectangle()
-                    .fill(Color.gray)
+                    .fill(color)
                     .frame(width: 16, height: 2)
                     .rotationEffect(.degrees(-45))
             }
