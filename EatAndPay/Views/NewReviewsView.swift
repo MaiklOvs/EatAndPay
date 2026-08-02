@@ -7,6 +7,21 @@
 
 import SwiftUI
 import DesignSystem
+import PhotosUI
+
+struct Movie: Transferable {
+    let url: URL
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(contentType: .movie) { movie in
+            SentTransferredFile(movie.url)
+        } importing: { received in
+            let copy = URL.documentsDirectory.appending(path: "video-\(UUID()).mov")
+            try FileManager.default.copyItem(at: received.file, to: copy)
+            return Self(url: copy)
+        }
+    }
+}
 
 struct NewReviewsView: View {
 
@@ -14,6 +29,9 @@ struct NewReviewsView: View {
     private let onSuccess: () -> Void
     @State private var text: String = ""
     @State private var selectedRating: Int = 0
+    @State private var selectedPhotos: [PhotosPickerItem] = []
+    @State private var selectedImages: [UIImage] = []
+    @State private var selectedVideos: [URL] = []
 
     @Environment(\.dismiss) private var dismiss
 
@@ -95,30 +113,48 @@ struct NewReviewsView: View {
                 }
             }
             HStack {
-                Button {
-                } label: {
+                PhotosPicker(
+                    selection: $selectedPhotos,
+                    maxSelectionCount: 5,
+                    matching: .images
+                ) {
                     Image(systemName: "photo")
                         .font(.system(size: 32))
                         .foregroundStyle(DSColors.plusPinky)
+                        .frame(width: 75, height: 75)
+                        .background(DSColors.smoky)
+                        .cornerRadius(12)
                 }
-                .frame(width: 75, height: 75)
-                .background(DSColors.smoky)
-                .cornerRadius(12)
+
                 Text("5 файлов JPG, PNG, BMP, GIF. \nдо 10 МБ каждый")
                     .foregroundStyle(DSColors.textSecondary)
             }
             HStack {
-                Button {
-                } label: {
+                PhotosPicker(
+                    selection: $selectedPhotos,
+                    maxSelectionCount: 1,
+                    matching: .videos
+                ) {
                     Image(systemName: "video")
                         .font(.system(size: 32))
                         .foregroundStyle(DSColors.plusPinky)
+                        .frame(width: 75, height: 75)
+                        .background(DSColors.smoky)
+                        .cornerRadius(12)
                 }
-                .frame(width: 75, height: 75)
-                .background(DSColors.smoky)
-                .cornerRadius(12)
                 Text("Видео в формате MOV, MP4. \nдо 300 МБ")
                     .foregroundStyle(DSColors.textSecondary)
+            }
+            ScrollView(.horizontal) {
+                HStack(spacing: 8) {
+                    ForEach(selectedImages, id: \.self) { image in
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 75, height: 75)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                }
             }
             Spacer()
             Text("Соглашаюсь с правилами публикации")
@@ -138,6 +174,23 @@ struct NewReviewsView: View {
             )
         }
         .padding(.horizontal, 12)
+        .onChange(of: selectedPhotos) { _, newItems in
+            Task {
+                selectedImages.removeAll()
+                selectedVideos.removeAll()
+
+                for item in newItems {
+                    if let data = try? await item.loadTransferable(type: Data.self),
+                       let image = UIImage(data: data) {
+                        selectedImages.append(image)
+                    }
+
+                    if let url = try? await item.loadTransferable(type: Movie.self)?.url {
+                        selectedVideos.append(url)
+                    }
+                }
+            }
+        }
     }
 }
 
