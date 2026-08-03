@@ -46,6 +46,8 @@ public enum DSTypography {
     public static let reviewSuccessTitle: Font = .custom(alsHaussFamilyName, size: 56)
     public static let reviewSuccessSubtitle: Font = .custom(alsHaussFamilyName, size: 22)
 
+    public static let addressTitle: Font = .custom(interFamilyName, size: 17).weight(.bold)
+
     // MARK: - Body
 
     /// Второстепенный текст (вес)

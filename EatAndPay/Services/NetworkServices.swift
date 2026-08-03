@@ -23,4 +23,5 @@ protocol NetworkServices {
         content: String,
         images: [String]
     ) async throws -> Operations.post_sol_products_sol__lcub_id_rcub__sol_reviews.Output.Ok
+    func loadAddress() async throws -> [AddressViewModel]
 }

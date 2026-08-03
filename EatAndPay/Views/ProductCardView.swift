@@ -17,7 +17,6 @@ struct ProductCardView: View {
     var body: some View {
         let quantity = cartViewModel.quantity(for: product.id)
         let displayedPrice = quantity > 0 ? product.price * quantity : product.price
-        let _ = print("ProductCardView image: \(product.image)")
         VStack(alignment: .leading) {
             AsyncImage(url: URL(string: product.image)) { phase in
                 switch phase {
@@ -27,7 +26,6 @@ struct ProductCardView: View {
                     image
                         .resizable()
                 case .failure(let error):
-                    let _ = print("ProductCardView AsyncImage error: \(error)")
                     DSImagePlaceholder()
                 @unknown default:
                     DSImagePlaceholder()
@@ -45,7 +43,7 @@ struct ProductCardView: View {
                             .padding(10)
                     } else {
                         Image(.heart)
-                            .padding(8)
+                            .padding(10)
                     }
                 }
             }

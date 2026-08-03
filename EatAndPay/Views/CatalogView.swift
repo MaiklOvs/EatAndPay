@@ -13,9 +13,11 @@ struct CatalogView: View {
     @State private var catalogModel = CatalogModel(networkService: NetworkServicesImpl())
     @State private var cartViewModel = CartViewModel(networkService: NetworkServicesImpl())
     @State private var searchViewModel = SearchViewModel(allProducts: [])
+    @State private var addressModel = AddressModel(networkService: NetworkServicesImpl())
     @State private var path = NavigationPath()
     @State private var isCartPresented = false
     @State private var isSearchPresented = false
+    @State private var isAddNewAddressPresented = false
 
     @ViewBuilder
     private func checkoutButtonView(isPresented: Binding<Bool>) -> some View {
@@ -41,6 +43,14 @@ struct CatalogView: View {
     var body: some View {
         NavigationStack(path: $path) {
             VStack(spacing: 0) {
+                Button {
+                    isAddNewAddressPresented = true
+                } label: {
+                    AddressView(address: addressModel)
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 15)
+                .buttonStyle(.plain)
                 TextTabBar(
                     selectedIndex: Binding(
                         get: { catalogModel.selectedTab.rawValue },
@@ -133,6 +143,9 @@ struct CatalogView: View {
                     cartViewModel: cartViewModel
                 )
             }
+            .sheet(isPresented: $isAddNewAddressPresented) {
+                AddAddressView()
+            }
             .navigationDestination(for: CatalogCard.self) { category in
                 ProductListView(
                     catalogModel: catalogModel,
@@ -146,6 +159,7 @@ struct CatalogView: View {
                 await catalogModel.loadCategories()
                 await catalogModel.loadProductsList()
                 await cartViewModel.loadCart()
+                await addressModel.loadAddress()
                 searchViewModel.allProducts = catalogModel.products.data
             }
         }

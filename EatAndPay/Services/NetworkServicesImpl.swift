@@ -154,4 +154,18 @@ final class NetworkServicesImpl: NetworkServices {
             throw NetworkError.badRequest
         }
     }
+
+    func loadAddress() async throws -> [AddressViewModel] {
+        let response = try await client.get_sol_addresses()
+        switch response {
+        case .ok(let okResponse):
+            let payload = try okResponse.body.json
+            let data = try JSONEncoder().encode(payload)
+            return try JSONDecoder().decode([AddressViewModel].self, from: data)
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        }
+    }
 }
