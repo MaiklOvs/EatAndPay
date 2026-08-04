@@ -59,7 +59,15 @@ public enum DSColors {
         blue: 240 / 255,
         opacity: 1
     )
+    
 
+    /// Цвет рамки для кнопки на экране карты с адресом
+    public static let addressButtonBorder = Color(
+        red: 254 / 255,
+        green: 241 / 255,
+        blue: 251 / 255,
+        opacity: 1
+    )
     // MARK: - Gradient
 
     /// Градиент кнопки добавления в корзину

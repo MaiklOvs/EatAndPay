@@ -16,6 +16,7 @@ public struct DSButton: View {
         case accent      // фиолетовый градиент, белый текст
         case light       // светлый градиент, тёмный текст
         case white       // белый фон, фиолетовый цвет
+        case inputAddress // белый фон, черный текст и рамка
     }
 
     private let action: () -> Void
@@ -31,6 +32,8 @@ public struct DSButton: View {
             return DSColors.lightGradient
         case .white:
             return .linearGradient(colors: [.white], startPoint: .leading, endPoint: .trailing)
+        case .inputAddress:
+            return .linearGradient(colors: [.white], startPoint: .leading, endPoint: .trailing)
         }
     }
 
@@ -42,6 +45,21 @@ public struct DSButton: View {
             return .black
         case .white:
             return DSColors.reviewSuccessButtonTitle
+        case .inputAddress:
+            return .black
+        }
+    }
+
+    func getBorder(style: Style) -> Color {
+        switch style {
+        case .accent:
+            return .clear
+        case .light:
+            return .clear
+        case .white:
+            return .clear
+        case .inputAddress:
+            return DSColors.addressButtonBorder
         }
     }
 
@@ -68,6 +86,10 @@ public struct DSButton: View {
             .padding(.vertical, 13)
             .background(getBackground(style: style))
             .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(getBorder(style: style), lineWidth: 1.5)
+            )
         }
     }
 }
