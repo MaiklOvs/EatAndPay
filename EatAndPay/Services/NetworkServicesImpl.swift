@@ -168,4 +168,18 @@ final class NetworkServicesImpl: NetworkServices {
             throw NetworkError.unexpectedStatus(statusCode)
         }
     }
+
+    func addAddress(input: Operations.post_sol_addresses.Input) async throws -> Operations.post_sol_addresses.Output.Ok {
+        let response = try await client.post_sol_addresses(input)
+        switch response {
+        case .ok(let okResponse):
+            return okResponse
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        case .badRequest(_):
+            throw NetworkError.badRequest
+        }
+    }
 }
