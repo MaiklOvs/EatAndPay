@@ -13,6 +13,7 @@ struct AddressMapView: View {
 
     @State private var mapModel = AddressMapModel()
     @State private var isSelectAddressPresented = false
+    @State private var isManualAddressPresented = false
     var onSave: () -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -121,7 +122,7 @@ struct AddressMapView: View {
                     .padding(.top, 24)
                 HStack {
                     DSButton(
-                        action: {},
+                        action: { isManualAddressPresented = true },
                         buttonTitle: "Ввести другой",
                         style: .inputAddress
                     )
@@ -156,6 +157,20 @@ struct AddressMapView: View {
                     dismiss()
                 }
             )
+        }
+        .sheet(isPresented: $isManualAddressPresented) {
+            AddressSelectView(
+                mapModel: mapModel,
+                onSave: {
+                    onSave()
+                    dismiss()
+                },
+                isManualAddress: true
+            )
+            .onAppear {
+                mapModel.selectedAddress = nil
+                mapModel.selectedCoordinate = nil
+            }
         }
     }
 }

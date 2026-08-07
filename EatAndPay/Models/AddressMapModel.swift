@@ -19,6 +19,8 @@ final class AddressMapModel {
     var selectedCoordinate: CLLocationCoordinate2D?
     var selectedAddress: String?
 
+    var city: String = ""
+    var street: String = ""
     var flat: String = ""
     var floor: String = ""
     var entrance: String = ""
@@ -31,9 +33,45 @@ final class AddressMapModel {
         self.networkService = networkService
     }
 
+    func geocodeAddress() async -> CLLocationCoordinate2D? {
+        let addressString = "\(city) \(street)"
+        guard !city.isEmpty, !street.isEmpty else {
+            print("City or street is missing")
+            return nil
+        }
+
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = addressString
+        request.resultTypes = .address
+
+        do {
+            let response = try await MKLocalSearch(request: request).start()
+            guard let item = response.mapItems.first else {
+                print("No coordinates found for address")
+                return nil
+            }
+            return item.placemark.coordinate
+        } catch {
+            print("Geocoding failed: \(error)")
+            return nil
+        }
+    }
+
     func addAddress() async {
-        guard let addressLine = selectedAddress,
-              let coordinate = selectedCoordinate else {
+        let addressLine: String
+        let coordinate: CLLocationCoordinate2D
+
+        if let selectedAddress = selectedAddress, let selectedCoordinate = selectedCoordinate {
+            addressLine = selectedAddress
+            coordinate = selectedCoordinate
+        } else if !city.isEmpty, !street.isEmpty {
+            addressLine = "\(city), \(street)"
+            guard let geocodedCoordinate = await geocodeAddress() else {
+                print("Failed to geocode manual address")
+                return
+            }
+            coordinate = geocodedCoordinate
+        } else {
             print("Address or coordinate is missing")
             return
         }
@@ -41,7 +79,7 @@ final class AddressMapModel {
         let body = Components.Schemas.Address(
             coordinates: [coordinate.longitude, coordinate.latitude],
             addressLine: addressLine,
-            floor: flat.isEmpty ? nil : flat,
+            floor: floor.isEmpty ? nil : floor,
             entrance: entrance.isEmpty ? nil : entrance,
             intercomCode: intercomCode.isEmpty ? nil : intercomCode,
             comment: comment.isEmpty ? nil : comment

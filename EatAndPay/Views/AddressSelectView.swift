@@ -13,21 +13,45 @@ struct AddressSelectView: View {
     @State private var mapModel: AddressMapModel
     @Environment(\.dismiss) private var dismiss
     var onSave: () -> Void
+    var isManualAddress: Bool
 
-    init(mapModel: AddressMapModel, onSave: @escaping () -> Void = {}) {
+    init(
+        mapModel: AddressMapModel,
+        onSave: @escaping () -> Void = {},
+        isManualAddress: Bool = false
+    ) {
         self.mapModel = mapModel
         self.onSave = onSave
+        self.isManualAddress = isManualAddress
     }
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text(mapModel.selectedAddress ?? "")
-                .font(DSTypography.addressMapTitle)
-                .padding(.horizontal, 12)
-                .padding(.top, 24)
-                .padding(.bottom, 24)
+            if isManualAddress {
+                Text("Введите адрес")
+                    .font(DSTypography.addressMapTitle)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 24)
+                    .padding(.bottom, 24)
+            } else {
+                Text(mapModel.selectedAddress ?? "")
+                    .font(DSTypography.addressMapTitle)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 24)
+                    .padding(.bottom, 24)
+            }
             VStack(alignment: .leading) {
-                Section(header: Text("Квартира/офис").font(DSTypography.caption).foregroundStyle(.gray)) {
+                if isManualAddress {
+                    Section(header: Text("Город").font(DSTypography.caption).foregroundStyle(.gray)) {
+                        TextField("Город", text: $mapModel.city)
+                    }
+                    Divider()
+                    Section(header: Text("Улица").font(DSTypography.caption).foregroundStyle(.gray).padding(.top, 24)) {
+                        TextField("Улица", text: $mapModel.street)
+                    }
+                    Divider()
+                }
+                Section(header: Text("Квартира/офис").font(DSTypography.caption).foregroundStyle(.gray).padding(.top, isManualAddress ? 24 : 0)) {
                     TextField("Квартира/офис", text: $mapModel.flat)
                 }
                 Divider()
