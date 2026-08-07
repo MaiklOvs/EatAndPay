@@ -13,7 +13,7 @@ struct AddressView: View {
     let address: AddressModel?
 
     var attributedText: AttributedString {
-        var result = AttributedString("\(address?.addressViewModel?.first?.addressLine ?? "Выберите адрес")\n")
+        var result = AttributedString("\(address?.selectedAddress?.addressLine ?? "Выберите адрес")\n")
         result.font = DSTypography.authorReviewTitle
 
         var subtitle = AttributedString("Доставка от 15 минут")

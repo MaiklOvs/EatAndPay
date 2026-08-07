@@ -13,6 +13,7 @@ final class AddressModel {
     private let networkService: NetworkServices
 
     var addressViewModel: [AddressViewModel]?
+    var selectedAddress: AddressViewModel?
 
     init(networkService: NetworkServices) {
         self.networkService = networkService
@@ -21,6 +22,9 @@ final class AddressModel {
     func loadAddress() async {
         do {
             addressViewModel = try await networkService.loadAddress()
+            if selectedAddress == nil, let first = addressViewModel?.first {
+                selectedAddress = first
+            }
         } catch {
             print("Failed to load address: \(error)")
         }

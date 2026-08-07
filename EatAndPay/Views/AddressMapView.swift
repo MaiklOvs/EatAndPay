@@ -13,7 +13,12 @@ struct AddressMapView: View {
 
     @State private var mapModel = AddressMapModel()
     @State private var isSelectAddressPresented = false
+    var onSave: () -> Void
     @Environment(\.dismiss) private var dismiss
+
+    init(onSave: @escaping () -> Void = {}) {
+        self.onSave = onSave
+    }
 
     private func reverseGeocode(_ coordinate: CLLocationCoordinate2D) {
         Task {
@@ -144,7 +149,13 @@ struct AddressMapView: View {
         }
         .ignoresSafeArea(edges: .bottom)
         .sheet(isPresented: $isSelectAddressPresented) {
-            AddressSelectView(mapModel: mapModel)
+            AddressSelectView(
+                mapModel: mapModel,
+                onSave: {
+                    onSave()
+                    dismiss()
+                }
+            )
         }
     }
 }

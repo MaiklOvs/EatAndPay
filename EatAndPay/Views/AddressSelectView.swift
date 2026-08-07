@@ -12,9 +12,11 @@ struct AddressSelectView: View {
 
     @State private var mapModel: AddressMapModel
     @Environment(\.dismiss) private var dismiss
+    var onSave: () -> Void
 
-    init(mapModel: AddressMapModel) {
+    init(mapModel: AddressMapModel, onSave: @escaping () -> Void = {}) {
         self.mapModel = mapModel
+        self.onSave = onSave
     }
 
     var body: some View {
@@ -52,6 +54,7 @@ struct AddressSelectView: View {
                         await mapModel.addAddress()
                     }
                     dismiss()
+                    onSave()
                 }, buttonTitle: "Сохранить")
             }
             .padding(.horizontal, 12)

@@ -144,7 +144,7 @@ struct CatalogView: View {
                 )
             }
             .sheet(isPresented: $isAddNewAddressPresented) {
-                AddressListView()
+                AddressListView(addressModel: addressModel)
             }
             .navigationDestination(for: CatalogCard.self) { category in
                 ProductListView(
