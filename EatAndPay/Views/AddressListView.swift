@@ -42,12 +42,8 @@ struct AddressListView: View {
                         addressModel.selectedAddress = address
                     } label: {
                         AddressCell(
-                            address: address.addressLine + "\n",
-                            details: getDetailsString(
-                                floor: address.floor,
-                                entrance: address.entrance,
-                                intercomCode: address.intercomCode
-                            ),
+                            address: address,
+                            addressModel: addressModel,
                             isSelected: address.id == addressModel.selectedAddress?.id
                         )
                     }

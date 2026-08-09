@@ -151,7 +151,8 @@ struct AddressMapView: View {
         .ignoresSafeArea(edges: .bottom)
         .sheet(isPresented: $isSelectAddressPresented) {
             AddressSelectView(
-                mapModel: mapModel,
+                mode: .create(mapModel),
+                addressModel: AddressModel(networkService: NetworkServicesImpl()),
                 onSave: {
                     onSave()
                     dismiss()
@@ -160,7 +161,8 @@ struct AddressMapView: View {
         }
         .sheet(isPresented: $isManualAddressPresented) {
             AddressSelectView(
-                mapModel: mapModel,
+                mode: .create(mapModel),
+                addressModel: AddressModel(networkService: NetworkServicesImpl()),
                 onSave: {
                     onSave()
                     dismiss()

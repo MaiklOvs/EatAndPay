@@ -29,6 +29,16 @@ final class AddressModel {
             print("Failed to load address: \(error)")
         }
     }
+
+    func deleteAddress(id: String) async {
+        let input = Operations.delete_sol_addresses_sol__lcub_id_rcub_.Input(path: .init(id: id))
+        do {
+            _ = try await networkService.deleteAddress(input: input)
+            await loadAddress()
+        } catch {
+            print("Failed to delete address: \(error)")
+        }
+    }
 }
 
 struct AddressViewModel: Codable, Identifiable, Hashable {

@@ -136,21 +136,4 @@ public enum DSColors {
         green: 34 / 255,
         blue: 225 / 255
     )
-
-    // MARK: - Favorite
-
-    /// Цвет иконки избранного (активный)
-    public static let favoriteActive = Color.red
-
-    /// Цвет иконки избранного (неактивный)
-    public static let favoriteInactive = Color(
-        red: 0.75,
-        green: 0.75,
-        blue: 0.75
-    )
-
-    // MARK: - Discount
-
-    /// Цвет скидки
-    public static let discount = Color.red
 }

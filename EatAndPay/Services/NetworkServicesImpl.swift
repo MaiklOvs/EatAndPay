@@ -182,4 +182,18 @@ final class NetworkServicesImpl: NetworkServices {
             throw NetworkError.badRequest
         }
     }
+
+    func deleteAddress(input: Operations.delete_sol_addresses_sol__lcub_id_rcub_.Input) async throws -> Operations.delete_sol_addresses_sol__lcub_id_rcub_.Output.Ok {
+        let response = try await client.delete_sol_addresses_sol__lcub_id_rcub_(input)
+        switch response {
+        case .ok(let okResponse):
+            return okResponse
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        case .notFound(_):
+            throw NetworkError.notFound
+        }
+    }
 }
