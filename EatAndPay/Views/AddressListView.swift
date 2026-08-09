@@ -61,11 +61,14 @@ struct AddressListView: View {
                 }
                 .buttonStyle(.plain)
                 .sheet(isPresented: $isAddressMapPresenter) {
-                    AddressMapView(onSave: {
-                        Task {
-                            await addressModel.loadAddress()
-                        }
-                    })
+                    AddressMapView(
+                        onSave: {
+                            Task {
+                                await addressModel.loadAddress()
+                            }
+                        },
+                        addressModel: addressModel
+                    )
                 }
             }
         }

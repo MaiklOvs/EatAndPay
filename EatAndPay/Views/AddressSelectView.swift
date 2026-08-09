@@ -102,23 +102,25 @@ struct AddressSelectView: View {
                     Divider()
                     Spacer()
                     DSButton(action: {
-                        switch mode {
-                        case .create(let mapModel):
-                            mapModel.city = city
-                            mapModel.street = street
-                            mapModel.flat = flat
-                            mapModel.floor = floor
-                            mapModel.entrance = entrance
-                            mapModel.intercomCode = intercomCode
-                            mapModel.comment = comment
-                            Task {
+                        Task {
+                            switch mode {
+                            case .create(let mapModel):
+                                mapModel.city = city
+                                mapModel.street = street
+                                mapModel.flat = flat
+                                mapModel.floor = floor
+                                mapModel.entrance = entrance
+                                mapModel.intercomCode = intercomCode
+                                mapModel.comment = comment
                                 await mapModel.addAddress()
+                            case .edit:
+                                break
                             }
-                        case .edit:
-                            break
+                            await MainActor.run {
+                                onSave()
+                                dismiss()
+                            }
                         }
-                        dismiss()
-                        onSave()
                     }, buttonTitle: "Сохранить")
                 }
                 .padding(.horizontal, 12)
@@ -147,9 +149,11 @@ struct AddressSelectView: View {
                     DeleteAddressButton(action: {
                         Task {
                             await addressModel.deleteAddress(id: address.id)
+                            await MainActor.run {
+                                onSave()
+                                dismiss()
+                            }
                         }
-                        dismiss()
-                        onSave()
                     })
                 } else {
                     EmptyView()
@@ -158,12 +162,18 @@ struct AddressSelectView: View {
         }
         .toolbarBackground(.hidden, for: .navigationBar)
         .sheet(isPresented: $isMapPresented) {
-            AddressMapView(onSave: {
-                Task {
-                    await addressModel.loadAddress()
-                }
-                onSave()
-            })
+            AddressMapView(
+                onSave: {
+                    Task {
+                        await addressModel.loadAddress()
+                        await MainActor.run {
+                            onSave()
+                            dismiss()
+                        }
+                    }
+                },
+                addressModel: addressModel
+            )
         }
         .onAppear {
             switch mode {

@@ -12,13 +12,18 @@ import DesignSystem
 struct AddressMapView: View {
 
     @State private var mapModel = AddressMapModel()
+    @State private var addressModel: AddressModel
     @State private var isSelectAddressPresented = false
     @State private var isManualAddressPresented = false
     var onSave: () -> Void
     @Environment(\.dismiss) private var dismiss
 
-    init(onSave: @escaping () -> Void = {}) {
+    init(
+        onSave: @escaping () -> Void = {},
+        addressModel: AddressModel
+    ) {
         self.onSave = onSave
+        self.addressModel = addressModel
     }
 
     private func reverseGeocode(_ coordinate: CLLocationCoordinate2D) {
@@ -152,7 +157,7 @@ struct AddressMapView: View {
         .sheet(isPresented: $isSelectAddressPresented) {
             AddressSelectView(
                 mode: .create(mapModel),
-                addressModel: AddressModel(networkService: NetworkServicesImpl()),
+                addressModel: addressModel,
                 onSave: {
                     onSave()
                     dismiss()
@@ -162,7 +167,7 @@ struct AddressMapView: View {
         .sheet(isPresented: $isManualAddressPresented) {
             AddressSelectView(
                 mode: .create(mapModel),
-                addressModel: AddressModel(networkService: NetworkServicesImpl()),
+                addressModel: addressModel,
                 onSave: {
                     onSave()
                     dismiss()
@@ -178,5 +183,5 @@ struct AddressMapView: View {
 }
 
 #Preview {
-    AddressMapView()
+    AddressMapView(addressModel: AddressModel(networkService: NetworkServicesImpl()))
 }
