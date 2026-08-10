@@ -26,4 +26,5 @@ protocol NetworkServices {
     func loadAddress() async throws -> [AddressViewModel]
     func addAddress(input: Operations.post_sol_addresses.Input) async throws -> Operations.post_sol_addresses.Output.Ok
     func deleteAddress(input: Operations.delete_sol_addresses_sol__lcub_id_rcub_.Input) async throws -> Operations.delete_sol_addresses_sol__lcub_id_rcub_.Output.Ok
+    func updateAddress(input: Operations.put_sol_addresses_sol__lcub_id_rcub_.Input) async throws -> Operations.put_sol_addresses_sol__lcub_id_rcub_.Output.Ok
 }

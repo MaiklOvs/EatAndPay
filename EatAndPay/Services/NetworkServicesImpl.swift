@@ -196,4 +196,20 @@ final class NetworkServicesImpl: NetworkServices {
             throw NetworkError.notFound
         }
     }
+
+    func updateAddress(input: Operations.put_sol_addresses_sol__lcub_id_rcub_.Input) async throws -> Operations.put_sol_addresses_sol__lcub_id_rcub_.Output.Ok {
+        let response = try await client.put_sol_addresses_sol__lcub_id_rcub_(input)
+        switch response {
+        case .ok(let okResponse):
+            return okResponse
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        case .notFound(_):
+            throw NetworkError.notFound
+        case .badRequest(_):
+            throw NetworkError.badRequest
+        }
+    }
 }

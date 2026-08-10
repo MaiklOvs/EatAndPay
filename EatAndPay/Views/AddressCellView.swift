@@ -62,7 +62,7 @@ struct AddressCell: View {
         .sheet(isPresented: $isAddressEditPresenter) {
             NavigationStack {
                 AddressSelectView(
-                    mode: .edit(address),
+                    mode: .edit(address, AddressMapModel()),
                     addressModel: addressModel,
                     onSave: {
                         Task {

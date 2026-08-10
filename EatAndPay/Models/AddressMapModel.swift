@@ -33,6 +33,12 @@ final class AddressMapModel {
         self.networkService = networkService
     }
 
+    private func addressLineWithoutFlat(_ addressLine: String) -> String {
+        let components = addressLine.split(separator: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        guard components.count > 1 else { return addressLine }
+        return components.dropLast().joined(separator: ", ")
+    }
+
     func geocodeAddress() async -> CLLocationCoordinate2D? {
         let addressString = "\(city) \(street)"
         guard !city.isEmpty, !street.isEmpty else {
@@ -62,7 +68,8 @@ final class AddressMapModel {
         let coordinate: CLLocationCoordinate2D
 
         if let selectedAddress = selectedAddress, let selectedCoordinate = selectedCoordinate {
-            addressLine = selectedAddress
+            let baseAddress = flat.isEmpty ? selectedAddress : addressLineWithoutFlat(selectedAddress)
+            addressLine = baseAddress + (flat.isEmpty ? "" : ", \(flat)")
             coordinate = selectedCoordinate
         } else if !city.isEmpty, !street.isEmpty {
             addressLine = "\(city), \(street)"
@@ -92,6 +99,48 @@ final class AddressMapModel {
             print("Address added successfully")
         } catch {
             print("Failed to add address: \(error)")
+        }
+    }
+
+    func updateAddress(id: String) async {
+        let addressLine: String
+        let coordinate: CLLocationCoordinate2D
+
+        if let selectedAddress = selectedAddress, let selectedCoordinate = selectedCoordinate {
+            let baseAddress = flat.isEmpty ? selectedAddress : addressLineWithoutFlat(selectedAddress)
+            addressLine = baseAddress + (flat.isEmpty ? "" : ", \(flat)")
+            coordinate = selectedCoordinate
+        } else if !city.isEmpty, !street.isEmpty {
+            addressLine = "\(city), \(street)"
+            guard let geocodedCoordinate = await geocodeAddress() else {
+                print("Failed to geocode manual address")
+                return
+            }
+            coordinate = geocodedCoordinate
+        } else {
+            print("Address or coordinate is missing")
+            return
+        }
+
+        let body = Components.Schemas.Address(
+            coordinates: [coordinate.longitude, coordinate.latitude],
+            addressLine: addressLine,
+            floor: floor.isEmpty ? nil : floor,
+            entrance: entrance.isEmpty ? nil : entrance,
+            intercomCode: intercomCode.isEmpty ? nil : intercomCode,
+            comment: comment.isEmpty ? nil : comment
+        )
+
+        let input = Operations.put_sol_addresses_sol__lcub_id_rcub_.Input(
+            path: .init(id: id),
+            body: .json(body)
+        )
+
+        do {
+            try await networkService.updateAddress(input: input)
+            print("Address updated successfully")
+        } catch {
+            print("Failed to update address: \(error)")
         }
     }
 }

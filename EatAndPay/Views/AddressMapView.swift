@@ -15,15 +15,23 @@ struct AddressMapView: View {
     @State private var addressModel: AddressModel
     @State private var isSelectAddressPresented = false
     @State private var isManualAddressPresented = false
+    @State private var mode: Mode
     var onSave: () -> Void
     @Environment(\.dismiss) private var dismiss
 
+    enum Mode {
+        case create
+        case edit(String)
+    }
+
     init(
+        mode: Mode = .create,
         onSave: @escaping () -> Void = {},
         addressModel: AddressModel
     ) {
         self.onSave = onSave
         self.addressModel = addressModel
+        self.mode = mode
     }
 
     private func reverseGeocode(_ coordinate: CLLocationCoordinate2D) {

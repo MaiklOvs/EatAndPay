@@ -7,12 +7,13 @@
 
 import SwiftUI
 import DesignSystem
+import MapKit
 
 struct AddressSelectView: View {
 
     enum Mode {
         case create(AddressMapModel)
-        case edit(AddressViewModel)
+        case edit(AddressViewModel, AddressMapModel)
     }
 
     let mode: Mode
@@ -47,7 +48,7 @@ struct AddressSelectView: View {
         switch mode {
         case .create(let mapModel):
             return mapModel.selectedAddress ?? ""
-        case .edit(let address):
+        case .edit(let address, _):
             return address.addressLine
         }
     }
@@ -113,8 +114,15 @@ struct AddressSelectView: View {
                                 mapModel.intercomCode = intercomCode
                                 mapModel.comment = comment
                                 await mapModel.addAddress()
-                            case .edit:
-                                break
+                            case .edit(let addresModel, let mapModel):
+                                mapModel.city = city
+                                mapModel.street = street
+                                mapModel.flat = flat
+                                mapModel.floor = floor
+                                mapModel.entrance = entrance
+                                mapModel.intercomCode = intercomCode
+                                mapModel.comment = comment
+                                await mapModel.updateAddress(id: addresModel.id)
                             }
                             await MainActor.run {
                                 onSave()
@@ -145,7 +153,7 @@ struct AddressSelectView: View {
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                if case .edit(let address) = mode {
+                if case .edit(let address, _) = mode {
                     DeleteAddressButton(action: {
                         Task {
                             await addressModel.deleteAddress(id: address.id)
@@ -185,8 +193,19 @@ struct AddressSelectView: View {
                 entrance = mapModel.entrance
                 intercomCode = mapModel.intercomCode
                 comment = mapModel.comment
-            case .edit(let address):
-                flat = ""
+            case .edit(let address, let mapModel):
+                mapModel.selectedAddress = address.addressLine
+                mapModel.floor = address.floor ?? ""
+                mapModel.entrance = address.entrance ?? ""
+                mapModel.intercomCode = address.intercomCode ?? ""
+                mapModel.comment = address.comment ?? ""
+                if address.coordinates.count >= 2 {
+                    mapModel.selectedCoordinate = CLLocationCoordinate2D(
+                        latitude: address.coordinates[1],
+                        longitude: address.coordinates[0]
+                    )
+                }
+                flat = mapModel.flat
                 floor = address.floor ?? ""
                 entrance = address.entrance ?? ""
                 intercomCode = address.intercomCode ?? ""
@@ -198,7 +217,18 @@ struct AddressSelectView: View {
 
 #Preview {
     AddressSelectView(
-        mode: .edit(AddressViewModel(coordinates: [], addressLine: "", floor: "", entrance: "", intercomCode: "", comment: "", id: "")),
+        mode: .edit(
+            AddressViewModel(
+                coordinates: [],
+                addressLine: "",
+                floor: "",
+                entrance: "",
+                intercomCode: "",
+                comment: "",
+                id: ""
+            ),
+            AddressMapModel(networkService: NetworkServicesImpl())
+        ),
         addressModel: AddressModel(networkService: NetworkServicesImpl())
     )
 }
