@@ -175,6 +175,15 @@ final class CartViewModel {
         }
     }
 
+    func makeOrder(paymentMethod: String, addressID: String) async {
+        do {
+            let cartList = try await networkService.makeOrder(paymentMethod: paymentMethod, addressID: addressID)
+            cart = nil
+        } catch {
+            print("Failed to make order: \(error)")
+        }
+    }
+
     func addItemInCart(id: String) async {
         do {
             let cartItem = try await networkService.addItemInCart(query: id)

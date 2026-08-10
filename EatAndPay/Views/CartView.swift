@@ -10,8 +10,17 @@ import DesignSystem
 
 struct CartView: View {
 
+    private let addressModel: AddressModel
+
     @Bindable var cartViewModel: CartViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var isAddNewAddressPresented = false
+    @State private var isSuccessOrderPresented = false
+
+    init(addressModel: AddressModel, cartViewModel: CartViewModel) {
+        self.addressModel = addressModel
+        self.cartViewModel = cartViewModel
+    }
 
     func countString(count: Int) -> String {
         let lastDigit = count % 10
@@ -66,6 +75,12 @@ struct CartView: View {
                     }
                 }
             }
+            Button {
+                isAddNewAddressPresented = true
+            } label: {
+                AddressView(address: addressModel)
+            }
+            .buttonStyle(.plain)
             HStack(spacing: 10) {
                 Text("Итого:")
                     .font(DSTypography.hugeTitle)
@@ -79,11 +94,29 @@ struct CartView: View {
                 price: cartViewModel.totalPrice(),
                 count: cartViewModel.totalCount(),
                 isExpanded: true,
-                action: {}
+                action: {
+                    Task {
+                        await cartViewModel.makeOrder(
+                            paymentMethod: "card",
+                            addressID: addressModel.selectedAddress?.id ?? ""
+                        )
+                    }
+                    isSuccessOrderPresented = true
+                }
             )
         }
         .padding(.horizontal, 12)
         .padding(.top, 10)
+        .sheet(isPresented: $isAddNewAddressPresented) {
+            AddressListView(addressModel: addressModel)
+        }
+        .sheet(isPresented: $isSuccessOrderPresented) {
+            SuccessView(
+                title: "Заказ оформлен",
+                subtitle: "Товары уже в процессе сборки, скоро привезём!",
+                action: { dismiss() }
+            )
+        }
         .task {
             await cartViewModel.loadCart()
         }
@@ -91,5 +124,8 @@ struct CartView: View {
 }
 
 #Preview {
-    CartView(cartViewModel: CartViewModel(networkService: NetworkServicesImpl()))
+    CartView(
+        addressModel: AddressModel(networkService: NetworkServicesImpl()),
+        cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+    )
 }

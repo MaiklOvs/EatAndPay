@@ -1,5 +1,5 @@
 //
-//  SuccessAddReviewView.swift
+//  SuccessView.swift
 //  EatAndPay
 //
 //  Created by Ovsyannikov.M10 on 02.08.2026.
@@ -8,9 +8,23 @@
 import SwiftUI
 import DesignSystem
 
-struct SuccessAddReviewView: View {
+struct SuccessView: View {
 
     @Environment(\.dismiss) private var dismiss
+
+    let title: String
+    let subtitle: String
+    let action: () -> Void
+
+    init(
+        title: String = "Отзыв отправлен",
+        subtitle: String = "Спасибо!\nСкоро мы его опубликуем",
+        action: @escaping () -> Void = {}
+    ) {
+        self.title = title
+        self.subtitle = subtitle
+        self.action = action
+    }
 
     var body: some View {
         ZStack {
@@ -23,16 +37,19 @@ struct SuccessAddReviewView: View {
             VStack(alignment: .leading) {
                 Spacer()
                 Image(.approve)
-                Text("Отзыв отправлен")
+                Text(title)
                     .font(DSTypography.reviewSuccessTitle)
                     .foregroundStyle(.white)
                     .padding(.top, 16)
                     .padding(.bottom, 16)
-                Text("Спасибо! Скоро мы его опубликуем")
+                Text(subtitle)
                     .font(DSTypography.reviewSuccessSubtitle)
                     .foregroundStyle(DSColors.reviewSuccessSubtitle)
                 DSButton(
-                    action: { dismiss() },
+                    action: {
+                        action()
+                        dismiss()
+                    },
                     buttonTitle: "Закрыть",
                     style: .white
                 )
@@ -45,5 +62,5 @@ struct SuccessAddReviewView: View {
 }
 
 #Preview {
-    SuccessAddReviewView()
+    SuccessView()
 }

@@ -177,7 +177,7 @@ struct ReviewsView: View {
             )
         }
         .fullScreenCover(isPresented: $isSuccessPresented) {
-            SuccessAddReviewView()
+            SuccessView()
         }
     }
 }

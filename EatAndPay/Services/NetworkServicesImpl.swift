@@ -97,6 +97,27 @@ final class NetworkServicesImpl: NetworkServices {
         }
     }
 
+    func makeOrder(paymentMethod: String, addressID: String) async throws -> Operations.post_sol_orders.Output.Ok {
+        let payload = Operations.post_sol_orders.Input.Body.jsonPayload(
+            paymentMethod: paymentMethod,
+            addressID: addressID
+        )
+
+        let input = Operations.post_sol_orders.Input(body: .json(payload))
+        let response = try await client.post_sol_orders(input)
+
+        switch response {
+        case .ok(let okResponse):
+            return okResponse
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        case .badRequest(_):
+            throw NetworkError.badRequest
+        }
+    }
+
     func removeFromFavorites(productId: String) async throws ->  Operations.delete_sol_products_sol__lcub_id_rcub__sol_favourite.Output.Ok {
         let response = try await client.delete_sol_products_sol__lcub_id_rcub__sol_favourite(Operations.delete_sol_products_sol__lcub_id_rcub__sol_favourite.Input(path: Operations.delete_sol_products_sol__lcub_id_rcub__sol_favourite.Input.Path(id: productId)))
         switch response {
