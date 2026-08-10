@@ -11,6 +11,7 @@ import DesignSystem
 struct ProductListView: View {
 
     let catalogModel: CatalogModel
+    let addressModel: AddressModel
     let name: String
     let category: String
 
@@ -59,7 +60,10 @@ struct ProductListView: View {
             await catalogModel.loadProductsList(query: Operations.get_sol_products.Input.Query(category: category))
         }
         .sheet(isPresented: $isCartPresented) {
-            CartView(cartViewModel: cartViewModel)
+            CartView(
+                addressModel: addressModel,
+                cartViewModel: cartViewModel
+            )
         }
         .sheet(isPresented: $isSearchPresented) {
             SearchView(
@@ -81,6 +85,7 @@ struct ProductListView: View {
 #Preview {
     ProductListView(
         catalogModel: CatalogModel(networkService: NetworkServicesImpl()),
+        addressModel: AddressModel(networkService: NetworkServicesImpl()),
         name: "Выпечка",
         category: "bakery",
         cartViewModel: CartViewModel(networkService: NetworkServicesImpl()),

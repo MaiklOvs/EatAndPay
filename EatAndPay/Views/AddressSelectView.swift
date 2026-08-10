@@ -48,8 +48,8 @@ struct AddressSelectView: View {
         switch mode {
         case .create(let mapModel):
             return mapModel.selectedAddress ?? ""
-        case .edit(let address, _):
-            return address.addressLine
+        case .edit(_, let mapModel):
+            return mapModel.selectedAddress ?? ""
         }
     }
 
@@ -171,13 +171,14 @@ struct AddressSelectView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .sheet(isPresented: $isMapPresented) {
             AddressMapView(
-                onSave: {
-                    Task {
-                        await addressModel.loadAddress()
-                        await MainActor.run {
-                            onSave()
-                            dismiss()
-                        }
+                onSelectPoint: { selectedMapModel in
+                    switch mode {
+                    case .create(let mapModel):
+                        mapModel.selectedAddress = selectedMapModel.selectedAddress
+                        mapModel.selectedCoordinate = selectedMapModel.selectedCoordinate
+                    case .edit(_, let mapModel):
+                        mapModel.selectedAddress = selectedMapModel.selectedAddress
+                        mapModel.selectedCoordinate = selectedMapModel.selectedCoordinate
                     }
                 },
                 addressModel: addressModel

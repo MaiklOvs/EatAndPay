@@ -127,7 +127,10 @@ struct CatalogView: View {
             }
             .navigationTitle("")
             .sheet(isPresented: $isCartPresented) {
-                CartView(cartViewModel: cartViewModel)
+                CartView(
+                    addressModel: addressModel,
+                    cartViewModel: cartViewModel
+                )
             }
             .sheet(isPresented: $isSearchPresented) {
                 SearchView(
@@ -149,6 +152,7 @@ struct CatalogView: View {
             .navigationDestination(for: CatalogCard.self) { category in
                 ProductListView(
                     catalogModel: catalogModel,
+                    addressModel: addressModel,
                     name: category.name,
                     category: category.id,
                     cartViewModel: cartViewModel,

@@ -15,23 +15,20 @@ struct AddressMapView: View {
     @State private var addressModel: AddressModel
     @State private var isSelectAddressPresented = false
     @State private var isManualAddressPresented = false
-    @State private var mode: Mode
+
     var onSave: () -> Void
+    var onSelectPoint: ((AddressMapModel) -> Void)?
+
     @Environment(\.dismiss) private var dismiss
 
-    enum Mode {
-        case create
-        case edit(String)
-    }
-
     init(
-        mode: Mode = .create,
         onSave: @escaping () -> Void = {},
+        onSelectPoint: ((AddressMapModel) -> Void)? = nil,
         addressModel: AddressModel
     ) {
         self.onSave = onSave
+        self.onSelectPoint = onSelectPoint
         self.addressModel = addressModel
-        self.mode = mode
     }
 
     private func reverseGeocode(_ coordinate: CLLocationCoordinate2D) {
@@ -134,14 +131,24 @@ struct AddressMapView: View {
                     .padding(.horizontal, 12)
                     .padding(.top, 24)
                 HStack {
+                    if onSelectPoint == nil {
+                        DSButton(
+                            action: { isManualAddressPresented = true },
+                            buttonTitle: "Ввести другой",
+                            style: .inputAddress
+                        )
+                        .frame(height: 50)
+                    }
                     DSButton(
-                        action: { isManualAddressPresented = true },
-                        buttonTitle: "Ввести другой",
-                        style: .inputAddress
-                    )
-                    .frame(height: 50)
-                    DSButton(
-                        action: { isSelectAddressPresented = true },
+                        
+                        action: {
+                            if let onSelectPoint = onSelectPoint {
+                                onSelectPoint(mapModel)
+                                dismiss()
+                            } else {
+                                isSelectAddressPresented = true
+                            }
+                        },
                         buttonTitle: "Выбрать адрес"
                     )
                     .frame(height: 50)
