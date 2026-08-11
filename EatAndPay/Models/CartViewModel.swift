@@ -6,18 +6,91 @@
 //
 
 import Foundation
+import SwiftData
 
 // Корзина
 
 @Observable
 final class CartViewModel {
 
+    private var context: ModelContext
+
     private let networkService: NetworkServices
 
     var cart: Cart?
 
-    init(networkService: NetworkServices) {
+    init(
+        context: ModelContext,
+        networkService: NetworkServices
+    ) {
+        self.context = context
         self.networkService = networkService
+    }
+
+    private func fetchPersistedCart() throws -> PersistedCart? {
+        let fetchDescriptor = FetchDescriptor<PersistedCart>()
+        let persistedCart = try context.fetch(fetchDescriptor)
+
+        return persistedCart.first
+    }
+
+    private func saveCartToLocal() throws {
+        let localCart = try fetchPersistedCart()
+
+        if let localCart {
+            context.delete(localCart)
+        }
+
+        if let cart {
+            let persistedCart = PersistedCart(
+                deliveryTime: cart.deliveryTime,
+                orderPrice: cart.orderPrice,
+                deliveryPrice: cart.deliveryPrice,
+                totalPrice: cart.totalPrice,
+                totalItems: cart.totalItems,
+                items: cart.items.map { item in
+                    PersistedCartItem(
+                        id: item.id,
+                        image: item.image,
+                        name: item.name,
+                        weight: item.weight,
+                        price: item.price,
+                        quantity: item.quantity,
+                        available: item.available
+                    )
+                }
+            )
+            context.insert(persistedCart)
+        }
+
+        try context.save()
+    }
+
+    private func loadCartFromLocal() throws -> Cart? {
+        let persistedCart = try fetchPersistedCart()
+
+        guard let persistedCart else { return nil }
+
+        let cart = Cart(
+            deliveryTime: persistedCart.deliveryTime,
+            orderPrice: persistedCart.orderPrice,
+            deliveryPrice: persistedCart.deliveryPrice,
+            totalPrice: persistedCart.totalPrice,
+            totalItems: persistedCart.totalItems,
+            items: persistedCart.items.map { item in
+                CartItem(
+                    id: item.id,
+                    image: item.image,
+                    name: item.name,
+                    weight: item.weight,
+                    price: item.price,
+                    quantity: item.quantity,
+                    available: item.available
+                )
+            }
+        )
+
+        return cart
     }
 
     func quantity(for productId: String) -> Int {
@@ -177,7 +250,7 @@ final class CartViewModel {
 
     func makeOrder(paymentMethod: String, addressID: String) async {
         do {
-            let cartList = try await networkService.makeOrder(paymentMethod: paymentMethod, addressID: addressID)
+            let _ = try await networkService.makeOrder(paymentMethod: paymentMethod, addressID: addressID)
             cart = nil
         } catch {
             print("Failed to make order: \(error)")

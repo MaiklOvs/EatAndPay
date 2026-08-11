@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct EatAndPayApp: App {
@@ -22,6 +23,7 @@ struct EatAndPayApp: App {
                     }
             } else {
                 CatalogView()
+                    .modelContainer(for: [PersistedCart.self, PersistedCartItem.self])
             }
         }
     }
