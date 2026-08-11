@@ -13,35 +13,41 @@ import SwiftData
 @Observable
 final class CartViewModel {
 
-    private var context: ModelContext
+    private var context: ModelContext?
 
     private let networkService: NetworkServices
 
     var cart: Cart?
 
     init(
-        context: ModelContext,
+        context: ModelContext? = nil,
         networkService: NetworkServices
     ) {
         self.context = context
         self.networkService = networkService
     }
 
+    func setContext(_ context: ModelContext) {
+        self.context = context
+    }
+
     private func fetchPersistedCart() throws -> PersistedCart? {
         let fetchDescriptor = FetchDescriptor<PersistedCart>()
-        let persistedCart = try context.fetch(fetchDescriptor)
-
-        return persistedCart.first
+        if let context {
+            let persistedCart = try context.fetch(fetchDescriptor)
+            return persistedCart.first
+        }
+        return nil
     }
 
     private func saveCartToLocal() throws {
         let localCart = try fetchPersistedCart()
 
-        if let localCart {
+        if let localCart, let context {
             context.delete(localCart)
         }
 
-        if let cart {
+        if let cart, let context {
             let persistedCart = PersistedCart(
                 deliveryTime: cart.deliveryTime,
                 orderPrice: cart.orderPrice,
@@ -61,9 +67,8 @@ final class CartViewModel {
                 }
             )
             context.insert(persistedCart)
+            try context.save()
         }
-
-        try context.save()
     }
 
     private func loadCartFromLocal() throws -> Cart? {
@@ -89,7 +94,6 @@ final class CartViewModel {
                 )
             }
         )
-
         return cart
     }
 
@@ -143,6 +147,12 @@ final class CartViewModel {
         cart.totalPrice += productPrice
         self.cart = cart
 
+        do {
+            try saveCartToLocal()
+        } catch {
+            print("Failed to save local cart: \(error)")
+        }
+
         Task { [weak self, productId] in
             await self?.addItemInCart(id: productId)
         }
@@ -169,6 +179,12 @@ final class CartViewModel {
         cart.totalPrice -= productPrice
         self.cart = cart
 
+        do {
+            try saveCartToLocal()
+        } catch {
+            print("Failed to save local cart: \(error)")
+        }
+
         Task { [weak self, productId] in
             await self?.removeItemInCart(id: productId)
         }
@@ -194,6 +210,12 @@ final class CartViewModel {
         cart.totalPrice += price
         self.cart = cart
 
+        do {
+            try saveCartToLocal()
+        } catch {
+            print("Failed to save local cart: \(error)")
+        }
+
         Task { [weak self, productId] in
             await self?.addItemInCart(id: productId)
         }
@@ -216,14 +238,24 @@ final class CartViewModel {
         cart.orderPrice -= price
         cart.totalPrice -= price
         self.cart = cart
+        do {
+            try saveCartToLocal()
+        } catch {
+            print("Failed to save local cart: \(error)")
+        }
 
         Task { [weak self, productId] in
             await self?.removeItemInCart(id: productId)
         }
     }
 
+    @MainActor
     func loadCart() async {
         do {
+            if let localCart = try loadCartFromLocal() {
+                cart = localCart
+            }
+
             let cartList = try await networkService.fetchCart()
             cart = Cart(
                 deliveryTime: cartList.deliveryTime,
@@ -243,15 +275,25 @@ final class CartViewModel {
                     )
                 }
             )
+
+            try saveCartToLocal()
         } catch {
             print("Failed to load cart: \(error)")
         }
     }
 
+    @MainActor
     func makeOrder(paymentMethod: String, addressID: String) async {
         do {
             let _ = try await networkService.makeOrder(paymentMethod: paymentMethod, addressID: addressID)
-            cart = nil
+
+            let localCart = try fetchPersistedCart()
+
+            if let localCart, let context {
+                context.delete(localCart)
+                cart = nil
+                try context.save()
+            }
         } catch {
             print("Failed to make order: \(error)")
         }

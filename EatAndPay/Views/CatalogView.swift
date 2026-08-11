@@ -6,9 +6,13 @@
 //
 
 import SwiftUI
+import SwiftData
 import DesignSystem
 
 struct CatalogView: View {
+
+    @Environment(\.modelContext)
+    private var context
 
     @State private var catalogModel = CatalogModel(networkService: NetworkServicesImpl())
     @State private var cartViewModel = CartViewModel(networkService: NetworkServicesImpl())
@@ -160,6 +164,7 @@ struct CatalogView: View {
                 )
             }
             .task {
+                cartViewModel.setContext(context)
                 await catalogModel.loadCategories()
                 await catalogModel.loadProductsList()
                 await cartViewModel.loadCart()
