@@ -131,8 +131,6 @@ struct CartView: View {
 
             if let message = snackbarManager.message {
                 SnackBar(title: message)
-                    .frame(maxWidth: .infinity)
-//                    .padding(.horizontal, 12)
                     .padding(.bottom, 60)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
