@@ -13,7 +13,10 @@ struct CartView: View {
     private let addressModel: AddressModel
 
     @Bindable var cartViewModel: CartViewModel
+
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var snackbarManager: SnackbarManager
+
     @State private var isAddNewAddressPresented = false
     @State private var isSuccessOrderPresented = false
 
@@ -41,85 +44,100 @@ struct CartView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack(spacing: 10) {
-                Text("Корзина")
-                    .font(DSTypography.hugeTitle)
-                    .padding(.top, 10)
-                Text(cartViewModel.totalCount().formatted())
-                    .font(DSTypography.hugeTitle)
-                    .foregroundStyle(DSColors.textSecondary)
-                    .padding(.top, 10)
-                Spacer()
-                CloseButton(action: { dismiss() } )
-                    .padding(.trailing, 20)
-                    .padding(.top, 10)
+        ZStack(alignment: .bottom) {
+            VStack(alignment: .leading) {
+                HStack(spacing: 10) {
+                    Text("Корзина")
+                        .font(DSTypography.hugeTitle)
+                        .padding(.top, 10)
+                    Text(cartViewModel.totalCount().formatted())
+                        .font(DSTypography.hugeTitle)
+                        .foregroundStyle(DSColors.textSecondary)
+                        .padding(.top, 10)
+                    Spacer()
+                    CloseButton(action: { dismiss() } )
+                        .padding(.trailing, 20)
+                        .padding(.top, 10)
+                }
+
+                HStack {
+                    Text("\(cartViewModel.cart?.deliveryTime.formatted() ?? "0") минут")
+                    Text(countString(count: cartViewModel.totalCount()))
+                }
+                ScrollView {
+                    LazyVStack(alignment: .leading) {
+                        ForEach(cartViewModel.cart?.items ?? []) { item in
+                            ProductInCart(cartItem: CartItem(
+                                id: item.id,
+                                image: item.image,
+                                name: item.name,
+                                weight: item.weight * item.quantity,
+                                price: item.price * item.quantity,
+                                quantity: item.quantity,
+                                available: item.available
+                            ), cartViewModel: cartViewModel)
+                        }
+                    }
+                }
+                Button {
+                    isAddNewAddressPresented = true
+                } label: {
+                    AddressView(address: addressModel)
+                }
+                .buttonStyle(.plain)
+                HStack(spacing: 10) {
+                    Text("Итого:")
+                        .font(DSTypography.hugeTitle)
+                        .padding(.top, 10)
+                    Text(cartViewModel.totalPrice().formatted() + " ₽")
+                        .font(DSTypography.hugeTitle)
+                        .foregroundStyle(DSColors.textSecondary)
+                        .padding(.top, 10)
+                }
+                CheckoutButton(
+                    price: cartViewModel.totalPrice(),
+                    count: cartViewModel.totalCount(),
+                    isExpanded: true,
+                    action: {
+                        Task {
+                            let success = await cartViewModel.makeOrder(
+                                paymentMethod: "card",
+                                addressID: addressModel.selectedAddress?.id ?? ""
+                            )
+                            if success {
+                                isSuccessOrderPresented = true
+                            } else {
+                                snackbarManager.show(title: "Не удалось оформить заказ, попробуйте еще раз")
+                            }
+                        }
+                    }
+                )
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 10)
+            .sheet(isPresented: $isAddNewAddressPresented) {
+                AddressListView(addressModel: addressModel)
+            }
+            .sheet(isPresented: $isSuccessOrderPresented) {
+                SuccessView(
+                    title: "Заказ оформлен",
+                    subtitle: "Товары уже в процессе сборки, скоро привезём!",
+                    action: { dismiss() }
+                )
+            }
+            .task {
+                await cartViewModel.loadCart()
             }
 
-            HStack {
-                Text("\(cartViewModel.cart?.deliveryTime.formatted() ?? "0") минут")
-                Text(countString(count: cartViewModel.totalCount()))
+            if let message = snackbarManager.message {
+                SnackBar(title: message)
+                    .frame(maxWidth: .infinity)
+//                    .padding(.horizontal, 12)
+                    .padding(.bottom, 60)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
-            ScrollView {
-                LazyVStack(alignment: .leading) {
-                    ForEach(cartViewModel.cart?.items ?? []) { item in
-                        ProductInCart(cartItem: CartItem(
-                            id: item.id,
-                            image: item.image,
-                            name: item.name,
-                            weight: item.weight * item.quantity,
-                            price: item.price * item.quantity,
-                            quantity: item.quantity,
-                            available: item.available
-                        ), cartViewModel: cartViewModel)
-                    }
-                }
-            }
-            Button {
-                isAddNewAddressPresented = true
-            } label: {
-                AddressView(address: addressModel)
-            }
-            .buttonStyle(.plain)
-            HStack(spacing: 10) {
-                Text("Итого:")
-                    .font(DSTypography.hugeTitle)
-                    .padding(.top, 10)
-                Text(cartViewModel.totalPrice().formatted() + " ₽")
-                    .font(DSTypography.hugeTitle)
-                    .foregroundStyle(DSColors.textSecondary)
-                    .padding(.top, 10)
-            }
-            CheckoutButton(
-                price: cartViewModel.totalPrice(),
-                count: cartViewModel.totalCount(),
-                isExpanded: true,
-                action: {
-                    Task {
-                        await cartViewModel.makeOrder(
-                            paymentMethod: "card",
-                            addressID: addressModel.selectedAddress?.id ?? ""
-                        )
-                    }
-                    isSuccessOrderPresented = true
-                }
-            )
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 10)
-        .sheet(isPresented: $isAddNewAddressPresented) {
-            AddressListView(addressModel: addressModel)
-        }
-        .sheet(isPresented: $isSuccessOrderPresented) {
-            SuccessView(
-                title: "Заказ оформлен",
-                subtitle: "Товары уже в процессе сборки, скоро привезём!",
-                action: { dismiss() }
-            )
-        }
-        .task {
-            await cartViewModel.loadCart()
-        }
+        .animation(.easeInOut(duration: 0.3), value: snackbarManager.message)
     }
 }
 

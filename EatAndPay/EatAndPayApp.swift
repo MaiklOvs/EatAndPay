@@ -16,27 +16,18 @@ struct EatAndPayApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ZStack(alignment: .bottom) {
-                if isLoading {
-                    SplashView()
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                isLoading = false
-                            }
+            if isLoading {
+                SplashView()
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            isLoading = false
                         }
-                } else {
-                    CatalogView()
-                        .modelContainer(for: [PersistedCart.self, PersistedCartItem.self])
-                }
-                if let message = snackbarManager.message {
-                    SnackBar(title: message)
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 16)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
+                    }
+            } else {
+                CatalogView()
+                    .modelContainer(for: [PersistedCart.self, PersistedCartItem.self])
+                    .environmentObject(snackbarManager)
             }
-            .environment(snackbarManager)
-            .animation(.easeInOut(duration: 0.3), value: snackbarManager.message)
         }
     }
 }

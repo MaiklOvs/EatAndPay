@@ -33,18 +33,15 @@ struct CartItem: Identifiable {
 final class CartViewModel {
 
     private var context: ModelContext?
-    private let snackbar: SnackbarManager?
     private let networkService: NetworkServices
 
     var cart: Cart?
 
     init(
         context: ModelContext? = nil,
-        snackbar: SnackbarManager? = nil,
         networkService: NetworkServices
     ) {
         self.context = context
-        self.snackbar = snackbar
         self.networkService = networkService
     }
 
@@ -308,7 +305,7 @@ extension CartViewModel {
     }
 
     @MainActor
-    func makeOrder(paymentMethod: String, addressID: String) async {
+    func makeOrder(paymentMethod: String, addressID: String) async -> Bool {
         do {
             let _ = try await networkService.makeOrder(paymentMethod: paymentMethod, addressID: addressID)
 
@@ -319,8 +316,9 @@ extension CartViewModel {
                 cart = nil
                 try context.save()
             }
+            return true
         } catch {
-            snackbar?.show(title: "Не удалось оформить заказ")
+            return false
         }
     }
 

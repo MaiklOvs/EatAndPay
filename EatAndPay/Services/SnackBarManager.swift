@@ -7,11 +7,12 @@
 
 import Foundation
 import SwiftUI
+internal import Combine
 
 @MainActor
-@Observable
-final class SnackbarManager {
-    var message: String? = nil
+final class SnackbarManager: ObservableObject {
+
+    @Published var message: String? = nil
 
     func show(title: String, duration: TimeInterval = 3.0) {
         message = title
