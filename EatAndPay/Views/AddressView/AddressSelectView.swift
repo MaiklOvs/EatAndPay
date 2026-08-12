@@ -28,6 +28,8 @@ struct AddressSelectView: View {
     @State private var isMapPresented = false
 
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var snackbarManager: SnackbarManager
+    
     var addressModel: AddressModel
     var onSave: () -> Void
     var isManualAddress: Bool
@@ -54,7 +56,7 @@ struct AddressSelectView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack(alignment: .bottom) {
             VStack(alignment: .leading) {
                 if isManualAddress {
                     Text("Введите адрес")
@@ -113,7 +115,15 @@ struct AddressSelectView: View {
                                 mapModel.entrance = entrance
                                 mapModel.intercomCode = intercomCode
                                 mapModel.comment = comment
-                                await mapModel.addAddress()
+                                let success = await mapModel.addAddress()
+                                if success {
+                                    await MainActor.run {
+                                        onSave()
+                                        dismiss()
+                                    }
+                                } else {
+                                    snackbarManager.show(title: "Не удалось добавить адрес, попробуйте еще раз")
+                                }
                             case .edit(let addresModel, let mapModel):
                                 mapModel.city = city
                                 mapModel.street = street
@@ -122,18 +132,28 @@ struct AddressSelectView: View {
                                 mapModel.entrance = entrance
                                 mapModel.intercomCode = intercomCode
                                 mapModel.comment = comment
-                                await mapModel.updateAddress(id: addresModel.id)
-                            }
-                            await MainActor.run {
-                                onSave()
-                                dismiss()
+                                let success = await mapModel.updateAddress(id: addresModel.id)
+                                if success {
+                                    await MainActor.run {
+                                        onSave()
+                                        dismiss()
+                                    }
+                                } else {
+                                    snackbarManager.show(title: "Не удалось обновить адрес, попробуйте еще раз")
+                                }
                             }
                         }
                     }, buttonTitle: "Сохранить")
                 }
                 .padding(.horizontal, 12)
             }
+            if let message = snackbarManager.message {
+                SnackBar(title: message)
+                    .padding(.bottom, 60)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
+        .animation(.easeInOut(duration: 0.3), value: snackbarManager.message)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -156,10 +176,14 @@ struct AddressSelectView: View {
                 if case .edit(let address, _) = mode {
                     DeleteAddressButton(action: {
                         Task {
-                            await addressModel.deleteAddress(id: address.id)
-                            await MainActor.run {
-                                onSave()
-                                dismiss()
+                            let success = await addressModel.deleteAddress(id: address.id)
+                            if success {
+                                await MainActor.run {
+                                    onSave()
+                                    dismiss()
+                                }
+                            } else {
+                                snackbarManager.show(title: "Не удалось удалить адрес, попробуйте еще раз")
                             }
                         }
                     })

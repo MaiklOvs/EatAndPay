@@ -30,13 +30,14 @@ final class AddressModel {
         }
     }
 
-    func deleteAddress(id: String) async {
+    func deleteAddress(id: String) async -> Bool {
         let input = Operations.delete_sol_addresses_sol__lcub_id_rcub_.Input(path: .init(id: id))
         do {
             _ = try await networkService.deleteAddress(input: input)
             await loadAddress()
+            return true
         } catch {
-            print("Failed to delete address: \(error)")
+            return false
         }
     }
 }

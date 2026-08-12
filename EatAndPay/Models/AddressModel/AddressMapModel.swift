@@ -63,7 +63,7 @@ final class AddressMapModel {
         }
     }
 
-    func addAddress() async {
+    func addAddress() async -> Bool {
         let addressLine: String
         let coordinate: CLLocationCoordinate2D
 
@@ -75,12 +75,12 @@ final class AddressMapModel {
             addressLine = "\(city), \(street)"
             guard let geocodedCoordinate = await geocodeAddress() else {
                 print("Failed to geocode manual address")
-                return
+                return false
             }
             coordinate = geocodedCoordinate
         } else {
             print("Address or coordinate is missing")
-            return
+            return false
         }
 
         let body = Components.Schemas.Address(
@@ -95,14 +95,14 @@ final class AddressMapModel {
         let input = Operations.post_sol_addresses.Input(body: .json(body))
 
         do {
-            try await networkService.addAddress(input: input)
-            print("Address added successfully")
+            let _ = try await networkService.addAddress(input: input)
+            return true
         } catch {
-            print("Failed to add address: \(error)")
+            return false
         }
     }
 
-    func updateAddress(id: String) async {
+    func updateAddress(id: String) async -> Bool {
         let addressLine: String
         let coordinate: CLLocationCoordinate2D
 
@@ -113,13 +113,11 @@ final class AddressMapModel {
         } else if !city.isEmpty, !street.isEmpty {
             addressLine = "\(city), \(street)"
             guard let geocodedCoordinate = await geocodeAddress() else {
-                print("Failed to geocode manual address")
-                return
+                return false
             }
             coordinate = geocodedCoordinate
         } else {
-            print("Address or coordinate is missing")
-            return
+            return false
         }
 
         let body = Components.Schemas.Address(
@@ -137,10 +135,10 @@ final class AddressMapModel {
         )
 
         do {
-            try await networkService.updateAddress(input: input)
-            print("Address updated successfully")
+            let _ = try await networkService.updateAddress(input: input)
+            return true
         } catch {
-            print("Failed to update address: \(error)")
+            return false
         }
     }
 }
