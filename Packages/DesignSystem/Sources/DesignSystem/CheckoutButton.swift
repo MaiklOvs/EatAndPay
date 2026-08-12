@@ -12,13 +12,13 @@ import SwiftUI
 public struct CheckoutButton: View {
 
     private let action: () -> Void
-    private let price: Int
-    private let count: Int
+    private let price: Int?
+    private let count: Int?
     private let isExpanded: Bool
 
     public init(
-        price: Int,
-        count: Int,
+        price: Int?,
+        count: Int?,
         isExpanded: Bool = false,
         action: @escaping () -> Void) {
             self.action = action

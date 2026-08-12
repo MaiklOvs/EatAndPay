@@ -15,7 +15,7 @@ struct ProductListView: View {
     let name: String
     let category: String
 
-    @Bindable var cartViewModel: CartViewModel
+    @Bindable var cartViewModel: CartViewModel?
     @State var searchViewModel: SearchViewModel
     @State private var isCartPresented = false
     @State private var isSearchPresented = false

@@ -29,25 +29,22 @@ struct CartItem: Identifiable {
     let available: Bool
 }
 
+@MainActor
 @Observable
 final class CartViewModel {
 
-    private var context: ModelContext?
-    private let networkService: NetworkServices
+    private let cartActor: CartActor
 
     var cart: Cart?
+    var isLoading: Bool = false
 
     init(
-        context: ModelContext? = nil,
-        networkService: NetworkServices
+        cartActor: CartActor
     ) {
-        self.context = context
-        self.networkService = networkService
+        self.cartActor = cartActor
     }
 
-    func setContext(_ context: ModelContext) {
-        self.context = context
-    }
+    // MARK: - Actions
 
     func quantity(for productId: String) -> Int {
         cart?.items.first { $0.id == productId }?.quantity ?? 0
@@ -60,283 +57,32 @@ final class CartViewModel {
     func totalCount() -> Int {
         cart?.items.reduce(0) { $0 + $1.quantity } ?? 0
     }
-}
 
-// MARK: - Actions
-
-extension CartViewModel {
-    private func fetchPersistedCart() throws -> PersistedCart? {
-        let fetchDescriptor = FetchDescriptor<PersistedCart>()
-        if let context {
-            let persistedCart = try context.fetch(fetchDescriptor)
-            return persistedCart.first
-        }
-        return nil
+    func add(product: ProductPreviewModel) async {
+        cart = await cartActor.add(product: product)
     }
 
-    private func saveCartToLocal() throws {
-        let localCart = try fetchPersistedCart()
-
-        if let localCart, let context {
-            context.delete(localCart)
-        }
-
-        if let cart, let context {
-            let persistedCart = PersistedCart(
-                deliveryTime: cart.deliveryTime,
-                orderPrice: cart.orderPrice,
-                deliveryPrice: cart.deliveryPrice,
-                totalPrice: cart.totalPrice,
-                totalItems: cart.totalItems,
-                items: cart.items.map { item in
-                    PersistedCartItem(
-                        id: item.id,
-                        image: item.image,
-                        name: item.name,
-                        weight: item.weight,
-                        price: item.price,
-                        quantity: item.quantity,
-                        available: item.available
-                    )
-                }
-            )
-            context.insert(persistedCart)
-            try context.save()
-        }
+    func remove(product: ProductPreviewModel) async {
+        cart = await cartActor.remove(product: product)
     }
 
-    private func loadCartFromLocal() throws -> Cart? {
-        let persistedCart = try fetchPersistedCart()
-
-        guard let persistedCart else { return nil }
-
-        let cart = Cart(
-            deliveryTime: persistedCart.deliveryTime,
-            orderPrice: persistedCart.orderPrice,
-            deliveryPrice: persistedCart.deliveryPrice,
-            totalPrice: persistedCart.totalPrice,
-            totalItems: persistedCart.totalItems,
-            items: persistedCart.items.map { item in
-                CartItem(
-                    id: item.id,
-                    image: item.image,
-                    name: item.name,
-                    weight: item.weight,
-                    price: item.price,
-                    quantity: item.quantity,
-                    available: item.available
-                )
-            }
-        )
-        return cart
+    func add(productId: String, price: Int) async {
+        cart = await cartActor.add(productId: productId, price: price)
     }
 
-    @MainActor
-    func add(product: ProductPreviewModel) {
-        let productId = product.id
-        let productPrice = product.price
-        let productImage = product.image
-        let productName = product.name
-        let productWeight = Int(product.weight)
-
-        var cart = cart ?? Cart(
-            deliveryTime: 0,
-            orderPrice: 0,
-            deliveryPrice: 0,
-            totalPrice: 0,
-            totalItems: 0,
-            items: []
-        )
-
-        if let index = cart.items.firstIndex(where: { $0.id == productId }) {
-            cart.items[index].quantity += 1
-        } else {
-            cart.items.append(
-                CartItem(
-                    id: productId,
-                    image: productImage,
-                    name: productName,
-                    weight: productWeight,
-                    price: productPrice,
-                    quantity: 1,
-                    available: true
-                )
-            )
-        }
-
-        cart.totalItems += 1
-        cart.orderPrice += productPrice
-        cart.totalPrice += productPrice
-        self.cart = cart
-
-        do {
-            try saveCartToLocal()
-        } catch {
-            print("Failed to save local cart: \(error)")
-        }
-
-        Task { [weak self, productId] in
-            await self?.addItemInCart(id: productId)
-        }
+    func remove(productId: String, price: Int) async {
+        cart = await cartActor.remove(productId: productId, price: price)
     }
 
-    @MainActor
-    func remove(product: ProductPreviewModel) {
-        let productId = product.id
-        let productPrice = product.price
-
-        guard let index = cart?.items.firstIndex(where: { $0.id == productId }),
-              cart?.items[index].quantity ?? 0 > 0 else { return }
-
-        guard var cart else { return }
-
-        cart.items[index].quantity -= 1
-
-        if cart.items[index].quantity == 0 {
-            cart.items.remove(at: index)
-        }
-
-        cart.totalItems -= 1
-        cart.orderPrice -= productPrice
-        cart.totalPrice -= productPrice
-        self.cart = cart
-
-        do {
-            try saveCartToLocal()
-        } catch {
-            print("Failed to save local cart: \(error)")
-        }
-
-        Task { [weak self, productId] in
-            await self?.removeItemInCart(id: productId)
-        }
-    }
-
-    @MainActor
-    func add(productId: String, price: Int) {
-        var cart = cart ?? Cart(
-            deliveryTime: 0,
-            orderPrice: 0,
-            deliveryPrice: 0,
-            totalPrice: 0,
-            totalItems: 0,
-            items: []
-        )
-
-        if let index = cart.items.firstIndex(where: { $0.id == productId }) {
-            cart.items[index].quantity += 1
-        }
-
-        cart.totalItems += 1
-        cart.orderPrice += price
-        cart.totalPrice += price
-        self.cart = cart
-
-        do {
-            try saveCartToLocal()
-        } catch {
-            print("Failed to save local cart: \(error)")
-        }
-
-        Task { [weak self, productId] in
-            await self?.addItemInCart(id: productId)
-        }
-    }
-
-    @MainActor
-    func remove(productId: String, price: Int) {
-        guard let index = cart?.items.firstIndex(where: { $0.id == productId }),
-              cart?.items[index].quantity ?? 0 > 0 else { return }
-
-        guard var cart else { return }
-
-        cart.items[index].quantity -= 1
-
-        if cart.items[index].quantity == 0 {
-            cart.items.remove(at: index)
-        }
-
-        cart.totalItems -= 1
-        cart.orderPrice -= price
-        cart.totalPrice -= price
-        self.cart = cart
-        do {
-            try saveCartToLocal()
-        } catch {
-            print("Failed to save local cart: \(error)")
-        }
-
-        Task { [weak self, productId] in
-            await self?.removeItemInCart(id: productId)
-        }
-    }
-
-    @MainActor
     func loadCart() async {
-        do {
-            if let localCart = try loadCartFromLocal() {
-                cart = localCart
-            }
-
-            let cartList = try await networkService.fetchCart()
-            cart = Cart(
-                deliveryTime: cartList.deliveryTime,
-                orderPrice: cartList.orderPrice,
-                deliveryPrice: cartList.deliveryPrice,
-                totalPrice: cartList.totalPrice,
-                totalItems: cartList.totalItems,
-                items: cartList.items.map { item in
-                    CartItem(
-                        id: item.value1.id,
-                        image: item.value1.image,
-                        name: item.value1.name,
-                        weight: item.value1.weight,
-                        price: item.value1.price,
-                        quantity: item.value1.quantity,
-                        available: item.value2.available
-                    )
-                }
-            )
-
-            try saveCartToLocal()
-        } catch {
-            print("Failed to load cart: \(error)")
-        }
+        cart = await cartActor.loadCart()
     }
 
-    @MainActor
     func makeOrder(paymentMethod: String, addressID: String) async -> Bool {
-        do {
-            let _ = try await networkService.makeOrder(paymentMethod: paymentMethod, addressID: addressID)
-
-            let localCart = try fetchPersistedCart()
-
-            if let localCart, let context {
-                context.delete(localCart)
-                cart = nil
-                try context.save()
-            }
-            return true
-        } catch {
-            return false
+        let success = await cartActor.makeOrder(paymentMethod: paymentMethod, addressID: addressID)
+        if success {
+            self.cart = nil
         }
-    }
-
-    func addItemInCart(id: String) async {
-        do {
-            let cartItem = try await networkService.addItemInCart(query: id)
-            cart?.totalItems = cartItem.total
-        } catch {
-            print("Failed to add item in cart: \(error)")
-        }
-    }
-
-    func removeItemInCart(id: String) async {
-        do {
-            let cartItem = try await networkService.removeItemInCart(query: id)
-            cart?.totalItems = cartItem.total ?? 0
-        } catch {
-            print("Failed to remove item in cart: \(error)")
-        }
+        return success
     }
 }

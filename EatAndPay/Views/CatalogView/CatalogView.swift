@@ -11,11 +11,10 @@ import DesignSystem
 
 struct CatalogView: View {
 
-    @Environment(\.modelContext)
-    private var context
+    @Environment(\.modelContext) private var context
 
     @State private var catalogModel = CatalogModel(networkService: NetworkServicesImpl())
-    @State private var cartViewModel = CartViewModel(networkService: NetworkServicesImpl())
+    @State private var cartViewModel: CartViewModel?
     @State private var searchViewModel = SearchViewModel(allProducts: [])
     @State private var addressModel = AddressModel(networkService: NetworkServicesImpl())
     @State private var path = NavigationPath()
@@ -25,10 +24,10 @@ struct CatalogView: View {
 
     @ViewBuilder
     private func checkoutButtonView(isPresented: Binding<Bool>) -> some View {
-        if let cart = cartViewModel.cart, !cart.items.isEmpty {
+        if let cart = cartViewModel?.cart, !cart.items.isEmpty {
             CheckoutButton(
-                price: cartViewModel.totalPrice(),
-                count: cartViewModel.totalCount()
+                price: cartViewModel?.totalPrice(),
+                count: cartViewModel?.totalCount()
             ) {
                 isPresented.wrappedValue = true
             }
@@ -115,6 +114,16 @@ struct CatalogView: View {
                     )
                 }
             }
+            .onAppear {
+                if cartViewModel == nil {
+                    cartViewModel = CartViewModel(
+                        cartActor: CartActor(
+                            container: context.container,
+                            networkService: NetworkServicesImpl()
+                        )
+                    )
+                }
+            }
             .onChange(of: catalogModel.products.data) { _, newValue in
                 searchViewModel.allProducts = newValue
             }
@@ -131,10 +140,12 @@ struct CatalogView: View {
             }
             .navigationTitle("")
             .sheet(isPresented: $isCartPresented) {
-                CartView(
-                    addressModel: addressModel,
-                    cartViewModel: cartViewModel
-                )
+                if let cartViewModel {
+                    CartView(
+                        addressModel: addressModel,
+                        cartViewModel: cartViewModel
+                    )
+                }
             }
             .sheet(isPresented: $isSearchPresented) {
                 SearchView(
@@ -164,10 +175,9 @@ struct CatalogView: View {
                 )
             }
             .task {
-                cartViewModel.setContext(context)
                 await catalogModel.loadCategories()
                 await catalogModel.loadProductsList()
-                await cartViewModel.loadCart()
+                await cartViewModel?.loadCart()
                 await addressModel.loadAddress()
                 searchViewModel.allProducts = catalogModel.products.data
             }
@@ -177,4 +187,5 @@ struct CatalogView: View {
 
 #Preview {
     CatalogView()
+        .modelContainer(for: [PersistedCart.self, PersistedCartItem.self])
 }

@@ -12,7 +12,7 @@ struct SearchView: View {
 
     let onFavoriteToggle: (String) -> Void
     @Bindable var searchViewModel: SearchViewModel
-    @Bindable var cartViewModel: CartViewModel
+    @Bindable var cartViewModel: CartViewModel?
     @State private var isSearchBarFocused = false
     @Environment(\.dismiss) private var dismiss
 

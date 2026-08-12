@@ -14,7 +14,7 @@ struct ProductGridView: View {
     let title: String
 
     let onFavoriteToggle: (String) -> Void
-    @Bindable var cartViewModel: CartViewModel
+    @Bindable var cartViewModel: CartViewModel?
     @State private var selectedProduct: ProductPreviewModel?
 
     var body: some View {
