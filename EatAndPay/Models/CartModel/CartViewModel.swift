@@ -10,20 +10,41 @@ import SwiftData
 
 // Корзина
 
+struct Cart {
+    let deliveryTime: Int
+    var orderPrice: Int
+    let deliveryPrice: Int
+    var totalPrice: Int
+    var totalItems: Int
+    var items: [CartItem]
+}
+
+struct CartItem: Identifiable {
+    let id: String
+    let image: String
+    let name: String
+    let weight: Int
+    let price: Int
+    var quantity: Int
+    let available: Bool
+}
+
 @Observable
 final class CartViewModel {
 
     private var context: ModelContext?
-
+    private let snackbar: SnackbarManager?
     private let networkService: NetworkServices
 
     var cart: Cart?
 
     init(
         context: ModelContext? = nil,
+        snackbar: SnackbarManager? = nil,
         networkService: NetworkServices
     ) {
         self.context = context
+        self.snackbar = snackbar
         self.networkService = networkService
     }
 
@@ -31,6 +52,22 @@ final class CartViewModel {
         self.context = context
     }
 
+    func quantity(for productId: String) -> Int {
+        cart?.items.first { $0.id == productId }?.quantity ?? 0
+    }
+
+    func totalPrice() -> Int {
+        cart?.items.reduce(0) { $0 + $1.price * $1.quantity } ?? 0
+    }
+
+    func totalCount() -> Int {
+        cart?.items.reduce(0) { $0 + $1.quantity } ?? 0
+    }
+}
+
+// MARK: - Actions
+
+extension CartViewModel {
     private func fetchPersistedCart() throws -> PersistedCart? {
         let fetchDescriptor = FetchDescriptor<PersistedCart>()
         if let context {
@@ -95,18 +132,6 @@ final class CartViewModel {
             }
         )
         return cart
-    }
-
-    func quantity(for productId: String) -> Int {
-        cart?.items.first { $0.id == productId }?.quantity ?? 0
-    }
-
-    func totalPrice() -> Int {
-        cart?.items.reduce(0) { $0 + $1.price * $1.quantity } ?? 0
-    }
-
-    func totalCount() -> Int {
-        cart?.items.reduce(0) { $0 + $1.quantity } ?? 0
     }
 
     @MainActor
@@ -295,7 +320,7 @@ final class CartViewModel {
                 try context.save()
             }
         } catch {
-            print("Failed to make order: \(error)")
+            snackbar?.show(title: "Не удалось оформить заказ")
         }
     }
 
@@ -316,23 +341,4 @@ final class CartViewModel {
             print("Failed to remove item in cart: \(error)")
         }
     }
-}
-
-struct Cart {
-    let deliveryTime: Int
-    var orderPrice: Int
-    let deliveryPrice: Int
-    var totalPrice: Int
-    var totalItems: Int
-    var items: [CartItem]
-}
-
-struct CartItem: Identifiable {
-    let id: String
-    let image: String
-    let name: String
-    let weight: Int
-    let price: Int
-    var quantity: Int
-    let available: Bool
 }

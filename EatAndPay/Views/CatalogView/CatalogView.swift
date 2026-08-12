@@ -15,7 +15,10 @@ struct CatalogView: View {
     private var context
 
     @State private var catalogModel = CatalogModel(networkService: NetworkServicesImpl())
-    @State private var cartViewModel = CartViewModel(networkService: NetworkServicesImpl())
+    @State private var cartViewModel = CartViewModel(
+        snackbar: SnackbarManager(),
+        networkService: NetworkServicesImpl()
+    )
     @State private var searchViewModel = SearchViewModel(allProducts: [])
     @State private var addressModel = AddressModel(networkService: NetworkServicesImpl())
     @State private var path = NavigationPath()
