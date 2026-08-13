@@ -7,6 +7,7 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct ProductListView: View {
 
@@ -15,17 +16,17 @@ struct ProductListView: View {
     let name: String
     let category: String
 
-    @Bindable var cartViewModel: CartViewModel?
+    var cartViewModel: CartViewModel?
     @State var searchViewModel: SearchViewModel
     @State private var isCartPresented = false
     @State private var isSearchPresented = false
 
     @ViewBuilder
     private var checkoutButtonView: some View {
-        if let cart = cartViewModel.cart, !cart.items.isEmpty {
+        if let cart = cartViewModel?.cart, !cart.items.isEmpty {
             CheckoutButton(
-                price: cartViewModel.totalPrice(),
-                count: cartViewModel.totalCount()
+                price: cartViewModel?.totalPrice() ?? 0,
+                count: cartViewModel?.totalCount() ?? 0
             ) {
                 isCartPresented = true
             }
@@ -88,7 +89,13 @@ struct ProductListView: View {
         addressModel: AddressModel(networkService: NetworkServicesImpl()),
         name: "Выпечка",
         category: "bakery",
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl()),
+        cartViewModel:
+            CartViewModel(
+                cartActor: CartActor(
+                    container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                    networkService: NetworkServicesImpl()
+                )
+            ),
         searchViewModel: SearchViewModel(allProducts: [])
     )
 }

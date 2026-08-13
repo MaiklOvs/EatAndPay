@@ -196,7 +196,10 @@ actor CartActor {
             if let localCart = try loadCartFromLocal() {
                 cart = localCart
             }
-
+        } catch {
+            print("Failed to load local cart: \(error)")
+        }
+        do {
             let cartList = try await networkService.fetchCart()
             cart = Cart(
                 deliveryTime: cartList.deliveryTime,
@@ -216,13 +219,12 @@ actor CartActor {
                     )
                 }
             )
-
             try saveCartToLocal()
-            return cart
         } catch {
             print("Failed to load cart: \(error)")
-            return nil
         }
+
+        return cart
     }
 
     // MARK: - Make order
@@ -255,13 +257,20 @@ actor CartActor {
         return persistedCart.first
     }
 
+    private func cleanPersistedCart(context: ModelContext) throws {
+        let fetchDescriptor = FetchDescriptor<PersistedCart>()
+
+        let persistedCart = try context.fetch(fetchDescriptor)
+
+        for item in persistedCart {
+            context.delete(item)
+        }
+    }
+
     private func saveCartToLocal() throws {
-        let localCart = try fetchPersistedCart()
         let context = ModelContext(container)
 
-        if let localCart {
-            context.delete(localCart)
-        }
+        try cleanPersistedCart(context: context)
 
         if let cart {
             let persistedCart = PersistedCart(

@@ -26,8 +26,8 @@ struct CatalogView: View {
     private func checkoutButtonView(isPresented: Binding<Bool>) -> some View {
         if let cart = cartViewModel?.cart, !cart.items.isEmpty {
             CheckoutButton(
-                price: cartViewModel?.totalPrice(),
-                count: cartViewModel?.totalCount()
+                price: cartViewModel?.totalPrice() ?? 0,
+                count: cartViewModel?.totalCount() ?? 0
             ) {
                 isPresented.wrappedValue = true
             }

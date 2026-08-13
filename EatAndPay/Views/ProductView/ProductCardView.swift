@@ -7,16 +7,18 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct ProductCardView: View {
 
     let product: ProductPreviewModel
     let onFavoriteToggle: () -> Void
-    @Bindable var cartViewModel: CartViewModel
+    var cartViewModel: CartViewModel?
 
     var body: some View {
-        let quantity = cartViewModel.quantity(for: product.id)
-        let displayedPrice = quantity > 0 ? product.price * quantity : product.price
+        let quantity = cartViewModel?.quantity(for: product.id)
+        let displayedPrice = quantity ?? 0 > 0 ? product.price * (quantity ?? 0) : product.price
+
         VStack(alignment: .leading) {
             AsyncImage(url: URL(string: product.image)) { phase in
                 switch phase {
@@ -25,7 +27,7 @@ struct ProductCardView: View {
                 case .success(let image):
                     image
                         .resizable()
-                case .failure(let error):
+                case .failure(_):
                     DSImagePlaceholder()
                 @unknown default:
                     DSImagePlaceholder()
@@ -69,9 +71,17 @@ struct ProductCardView: View {
             }
             CartButton(
                 price: displayedPrice,
-                count: quantity,
-                onDecrement: { cartViewModel.remove(product: product) },
-                onIncrement: { cartViewModel.add(product: product) }
+                count: quantity ?? 0,
+                onDecrement: {
+                    Task {
+                        await cartViewModel?.remove(product: product)
+                    }
+                },
+                onIncrement: {
+                    Task {
+                        await cartViewModel?.add(product: product)
+                    }
+                }
             )
             .padding(.bottom, 10)
         }
@@ -93,6 +103,12 @@ struct ProductCardView: View {
                             discount: 100
                         ),
                     onFavoriteToggle: {  },
-                    cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+                    cartViewModel:
+                        CartViewModel(
+                            cartActor: CartActor(
+                                container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                                networkService: NetworkServicesImpl()
+                            )
+                        )
     )
 }

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct ProductGridView: View {
 
@@ -14,7 +15,7 @@ struct ProductGridView: View {
     let title: String
 
     let onFavoriteToggle: (String) -> Void
-    @Bindable var cartViewModel: CartViewModel?
+    var cartViewModel: CartViewModel?
     @State private var selectedProduct: ProductPreviewModel?
 
     var body: some View {
@@ -67,6 +68,12 @@ struct ProductGridView: View {
         productPreviewModel: [],
         title: "Выпечка",
         onFavoriteToggle: { _ in },
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+        cartViewModel:
+            CartViewModel(
+                cartActor: CartActor(
+                    container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                    networkService: NetworkServicesImpl()
+                )
+            )
     )
 }

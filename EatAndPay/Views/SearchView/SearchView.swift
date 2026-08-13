@@ -7,12 +7,13 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct SearchView: View {
 
     let onFavoriteToggle: (String) -> Void
     @Bindable var searchViewModel: SearchViewModel
-    @Bindable var cartViewModel: CartViewModel?
+    var cartViewModel: CartViewModel?
     @State private var isSearchBarFocused = false
     @Environment(\.dismiss) private var dismiss
 
@@ -108,6 +109,12 @@ struct SearchView: View {
                 discount: 100
             )
         ]),
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+        cartViewModel:
+            CartViewModel(
+                cartActor: CartActor(
+                    container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                    networkService: NetworkServicesImpl()
+                )
+            )
     )
 }

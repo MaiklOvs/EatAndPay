@@ -7,11 +7,12 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct CardDetailsView: View {
 
     @State private var viewModel = ProductCardViewModel(networkService: NetworkServicesImpl())
-    @Bindable var cartViewModel: CartViewModel
+    var cartViewModel: CartViewModel?
     let productId: String
     let onFavoriteToggle: () -> Void
     @State private var isFavorite = false
@@ -20,7 +21,7 @@ struct CardDetailsView: View {
 
     init(
         productId: String,
-        cartViewModel: CartViewModel,
+        cartViewModel: CartViewModel?,
         onFavoriteToggle: @escaping () -> Void
     ) {
         self.productId = productId
@@ -113,19 +114,21 @@ struct CardDetailsView: View {
             DSButton(
                 action: {
                     if let product = viewModel.productCard {
-                        cartViewModel.add(
-                            product: ProductPreviewModel(
-                                id: product.id,
-                                image: product.image,
-                                name: product.name,
-                                weight: product.weight,
-                                price: product.price,
-                                rating: product.rating,
-                                reviewCount: 0,
-                                isFavorite: product.isFavorite,
-                                discount: product.discount
+                        Task {
+                            await cartViewModel?.add(
+                                product: ProductPreviewModel(
+                                    id: product.id,
+                                    image: product.image,
+                                    name: product.name,
+                                    weight: product.weight,
+                                    price: product.price,
+                                    rating: product.rating,
+                                    reviewCount: 0,
+                                    isFavorite: product.isFavorite,
+                                    discount: product.discount
+                                )
                             )
-                        )
+                        }
                         dismiss()
                     }
                 }
@@ -142,7 +145,13 @@ struct CardDetailsView: View {
 #Preview {
     CardDetailsView(
         productId: "",
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl()),
+        cartViewModel:
+            CartViewModel(
+                cartActor: CartActor(
+                    container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                    networkService: NetworkServicesImpl()
+                )
+            ),
         onFavoriteToggle: {  }
     )
 }
