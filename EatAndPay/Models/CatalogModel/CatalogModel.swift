@@ -46,6 +46,44 @@ final class CatalogModel {
         }
     }
 
+    func loadAllProducts(query: Operations.get_sol_products.Input.Query = .init()) async {
+        var currentPage = 1
+        var allData: [ProductPreviewModel] = []
+        var totalPages = 1
+
+        repeat {
+            do {
+                var pageQuery = query
+                pageQuery.page = currentPage
+                let productsList = try await networkService.fetchProductsList(query: pageQuery)
+                totalPages = productsList.totalPages
+                let pageData = productsList.data.map { item in
+                    ProductPreviewModel(
+                        id: item.id,
+                        image: item.image,
+                        name: item.name,
+                        weight: item.weight,
+                        price: item.price,
+                        rating: item.rating,
+                        reviewCount: item.reviewCount,
+                        isFavorite: item.isFavorite,
+                        discount: item.discount
+                    )
+                }
+                allData.append(contentsOf: pageData)
+                for product in pageData {
+                    favoritesService.setFavoriteStatus(productId: product.id, isFavorite: product.isFavorite)
+                }
+                currentPage += 1
+            } catch {
+                print("Failed to load products list: \(error)")
+                break
+            }
+        } while currentPage <= totalPages
+
+        products = Products(currentPage: 1, totalPages: totalPages, data: allData)
+    }
+
     func loadProductsList(query: Operations.get_sol_products.Input.Query = .init()) async {
         do {
             let productsList = try await networkService.fetchProductsList(query: query)

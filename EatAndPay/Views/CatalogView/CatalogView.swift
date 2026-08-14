@@ -107,11 +107,16 @@ struct CatalogView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 case .favorites:
                     ProductGridView(
-                        productPreviewModel: catalogModel.products.data.filter { catalogModel.favoritesService.isFavorite(productId: $0.id)},
+                        productPreviewModel: catalogModel.products.data.filter { catalogModel.favoritesService.isFavorite(productId: $0.id) },
                         title: "Избранное",
                         cartViewModel: cartViewModel,
                         favoritesService: catalogModel.favoritesService
                     )
+                    .task(id: catalogModel.selectedTab) {
+                        if catalogModel.selectedTab == .favorites {
+                            await catalogModel.loadAllProducts()
+                        }
+                    }
                 }
             }
             .onChange(of: catalogModel.products.data) { _, newValue in
