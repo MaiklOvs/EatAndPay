@@ -7,13 +7,15 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct ProductGridView: View {
 
     let productPreviewModel: [ProductPreviewModel]
     let title: String
 
-    @Bindable var cartViewModel: CartViewModel
+    var cartViewModel: CartViewModel?
+
     @Bindable var favoritesService: FavoritesService
     @State private var selectedProduct: ProductPreviewModel?
 
@@ -64,7 +66,13 @@ struct ProductGridView: View {
     ProductGridView(
         productPreviewModel: [],
         title: "Выпечка",
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl()),
+        cartViewModel:
+            CartViewModel(
+                cartActor: CartActor(
+                    container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                    networkService: NetworkServicesImpl()
+                )
+            ),
         favoritesService: FavoritesService(networkServices: NetworkServicesImpl())
     )
 }

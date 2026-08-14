@@ -7,12 +7,15 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct SearchView: View {
 
     @Bindable var searchViewModel: SearchViewModel
-    @Bindable var cartViewModel: CartViewModel
     @Bindable var favoritesService: FavoritesService
+
+
+    var cartViewModel: CartViewModel?
 
     @State private var isSearchBarFocused = false
     @Environment(\.dismiss) private var dismiss
@@ -106,7 +109,13 @@ struct SearchView: View {
                 discount: 100
             )
         ]),
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl()),
-        favoritesService: FavoritesService(networkServices: NetworkServicesImpl())
+        favoritesService: FavoritesService(networkServices: NetworkServicesImpl()),
+        cartViewModel:
+            CartViewModel(
+                cartActor: CartActor(
+                    container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                    networkService: NetworkServicesImpl()
+                )
+            )
     )
 }
