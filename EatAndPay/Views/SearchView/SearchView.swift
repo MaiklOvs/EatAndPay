@@ -15,7 +15,7 @@ struct SearchView: View {
     @Bindable var favoritesService: FavoritesService
 
 
-    var cartViewModel: CartViewModel?
+    var cartService: CartService
 
     @State private var isSearchBarFocused = false
     @Environment(\.dismiss) private var dismiss
@@ -72,7 +72,7 @@ struct SearchView: View {
                                 ProductCardView(
                                     product: result,
                                     favoritesService: favoritesService,
-                                    cartViewModel: cartViewModel
+                                    cartService: cartService
                                 )
                             }
                         }
@@ -110,8 +110,8 @@ struct SearchView: View {
             )
         ]),
         favoritesService: FavoritesService(networkServices: NetworkServicesImpl()),
-        cartViewModel:
-            CartViewModel(
+        cartService:
+            CartService(
                 cartActor: CartActor(
                     container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
                     networkService: NetworkServicesImpl()

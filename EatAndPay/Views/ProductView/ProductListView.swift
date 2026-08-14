@@ -16,17 +16,17 @@ struct ProductListView: View {
     let name: String
     let category: String
 
-    var cartViewModel: CartViewModel?
+    var cartService: CartService
     @State var searchViewModel: SearchViewModel
     @State private var isCartPresented = false
     @State private var isSearchPresented = false
 
     @ViewBuilder
     private var checkoutButtonView: some View {
-        if let cart = cartViewModel?.cart, !cart.items.isEmpty {
+        if let cart = cartService.cart, !cart.items.isEmpty {
             CheckoutButton(
-                price: cartViewModel?.totalPrice() ?? 0,
-                count: cartViewModel?.totalCount() ?? 0
+                price: cartService.totalPrice(),
+                count: cartService.totalCount()
             ) {
                 isCartPresented = true
             }
@@ -39,7 +39,7 @@ struct ProductListView: View {
         ProductGridView(
             productPreviewModel: catalogModel.products.data,
             title: name,
-            cartViewModel: cartViewModel,
+            cartService: cartService,
             favoritesService: catalogModel.favoritesService
         )
         .overlay(alignment: .bottom) {
@@ -59,14 +59,14 @@ struct ProductListView: View {
         .sheet(isPresented: $isCartPresented) {
             CartView(
                 addressModel: addressModel,
-                cartViewModel: cartViewModel
+                cartService: cartService
             )
         }
         .sheet(isPresented: $isSearchPresented) {
             SearchView(
                 searchViewModel: searchViewModel,
-                cartViewModel: cartViewModel,
-                favoritesService: catalogModel.favoritesService
+                favoritesService: catalogModel.favoritesService,
+                cartService: cartService
             )
         }
     }
@@ -81,8 +81,8 @@ struct ProductListView: View {
         addressModel: AddressModel(networkService: NetworkServicesImpl()),
         name: "Выпечка",
         category: "bakery",
-        cartViewModel:
-            CartViewModel(
+        cartService:
+            CartService(
                 cartActor: CartActor(
                     container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
                     networkService: NetworkServicesImpl()

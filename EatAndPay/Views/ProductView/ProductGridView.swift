@@ -14,7 +14,7 @@ struct ProductGridView: View {
     let productPreviewModel: [ProductPreviewModel]
     let title: String
 
-    var cartViewModel: CartViewModel?
+    var cartService: CartService
 
     @Bindable var favoritesService: FavoritesService
     @State private var selectedProduct: ProductPreviewModel?
@@ -40,7 +40,7 @@ struct ProductGridView: View {
                     ProductCardView(
                         product: data,
                         favoritesService: favoritesService,
-                        cartViewModel: cartViewModel
+                        cartService: cartService
                     )
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 10)
@@ -53,7 +53,7 @@ struct ProductGridView: View {
         .sheet(item: $selectedProduct) { product in
             CardDetailsView(
                 productId: product.id,
-                cartViewModel: cartViewModel,
+                cartService: cartService,
                 favoriteServices: favoritesService
             )
             .presentationDetents([.large])
@@ -66,8 +66,8 @@ struct ProductGridView: View {
     ProductGridView(
         productPreviewModel: [],
         title: "Выпечка",
-        cartViewModel:
-            CartViewModel(
+        cartService:
+            CartService(
                 cartActor: CartActor(
                     container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
                     networkService: NetworkServicesImpl()

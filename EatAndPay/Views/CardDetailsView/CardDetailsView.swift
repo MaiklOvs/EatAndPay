@@ -13,7 +13,7 @@ struct CardDetailsView: View {
 
     @Bindable var favoritesService: FavoritesService
 
-    var cartViewModel: CartViewModel?
+    var cartService: CartService
     let productId: String
 
     @State private var viewModel = ProductCardViewModel(networkService: NetworkServicesImpl())
@@ -22,11 +22,11 @@ struct CardDetailsView: View {
 
     init(
         productId: String,
-        cartViewModel: CartViewModel?,
+        cartService: CartService,
         favoriteServices: FavoritesService,
     ) {
         self.productId = productId
-        self.cartViewModel = cartViewModel
+        self.cartService = cartService
         self.favoritesService = favoriteServices
     }
 
@@ -117,7 +117,7 @@ struct CardDetailsView: View {
                 action: {
                     if let product = viewModel.productCard {
                         Task {
-                            await cartViewModel?.add(
+                            await cartService.add(
                                 product: ProductPreviewModel(
                                     id: product.id,
                                     image: product.image,
@@ -146,8 +146,8 @@ struct CardDetailsView: View {
 #Preview {
     CardDetailsView(
         productId: "",
-        cartViewModel:
-            CartViewModel(
+        cartService:
+            CartService(
                 cartActor: CartActor(
                     container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
                     networkService: NetworkServicesImpl()

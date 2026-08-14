@@ -15,11 +15,11 @@ struct ProductCardView: View {
     
     @Bindable var favoritesService: FavoritesService
 
-    var cartViewModel: CartViewModel?
+    var cartService: CartService
 
     var body: some View {
-        let quantity = cartViewModel?.quantity(for: product.id)
-        let displayedPrice = quantity ?? 0 > 0 ? product.price * (quantity ?? 0) : product.price
+        let quantity = cartService.quantity(for: product.id)
+        let displayedPrice = quantity > 0 ? product.price * quantity : product.price
 
         VStack(alignment: .leading) {
             AsyncImage(url: URL(string: product.image)) { phase in
@@ -75,15 +75,15 @@ struct ProductCardView: View {
             }
             CartButton(
                 price: displayedPrice,
-                count: quantity ?? 0,
+                count: quantity,
                 onDecrement: {
                     Task {
-                        await cartViewModel?.remove(product: product)
+                        await cartService.remove(product: product)
                     }
                 },
                 onIncrement: {
                     Task {
-                        await cartViewModel?.add(product: product)
+                        await cartService.add(product: product)
                     }
                 }
             )
@@ -106,13 +106,10 @@ struct ProductCardView: View {
                             isFavorite: false,
                             discount: 100
                         ),
-                    favoritesService: FavoritesService(networkServices: NetworkServicesImpl()),
-                    cartViewModel:
-                        CartViewModel(
-                            cartActor: CartActor(
-                                container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
-                                networkService: NetworkServicesImpl()
-                            )
-                        )
+                    favoritesService: FavoritesService(networkServices: NetworkServicesImpl()), cartService: CartService(
+                        cartActor: CartActor(
+                        container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                        networkService: NetworkServicesImpl()
+                    ))
     )
 }

@@ -12,7 +12,7 @@ import SwiftData
 struct ProductInCart: View {
 
     let cartItem: CartItem
-    var cartViewModel: CartViewModel?
+    var cartService: CartService
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -34,12 +34,12 @@ struct ProductInCart: View {
                     count: cartItem.quantity,
                     onDecrement: {
                         Task {
-                            await cartViewModel?.remove(productId: cartItem.id, price: cartItem.price)
+                            await cartService.remove(productId: cartItem.id, price: cartItem.price)
                         }
                     },
                     onIncrement: {
                         Task {
-                            await cartViewModel?.add(productId: cartItem.id, price: cartItem.price)
+                            await cartService.add(productId: cartItem.id, price: cartItem.price)
                         }
                     }
                 )
@@ -59,8 +59,8 @@ struct ProductInCart: View {
         quantity: 1,
         available: true
     ),
-                  cartViewModel:
-                    CartViewModel(
+                  cartService:
+                    CartService(
                         cartActor: CartActor(
                             container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
                             networkService: NetworkServicesImpl()

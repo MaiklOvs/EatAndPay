@@ -24,7 +24,10 @@ struct EatAndPayApp: App {
                         }
                     }
             } else {
-                CatalogView()
+                CatalogView(cartService: CartService(
+                    cartActor: CartActor(
+                        container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                        networkService: NetworkServicesImpl())))
                     .modelContainer(for: [PersistedCart.self, PersistedCartItem.self])
                     .environmentObject(snackbarManager)
             }

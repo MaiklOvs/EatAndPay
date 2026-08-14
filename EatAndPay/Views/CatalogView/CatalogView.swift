@@ -17,7 +17,7 @@ struct CatalogView: View {
         networkService: NetworkServicesImpl(),
         favoritesService: FavoritesService(networkServices: NetworkServicesImpl())
     )
-    @State private var cartViewModel: CartViewModel?
+    var cartService: CartService
     @State private var searchViewModel = SearchViewModel(allProducts: [])
     @State private var addressModel = AddressModel(networkService: NetworkServicesImpl())
     @State private var path = NavigationPath()
@@ -27,10 +27,10 @@ struct CatalogView: View {
 
     @ViewBuilder
     private func checkoutButtonView(isPresented: Binding<Bool>) -> some View {
-        if let cart = cartViewModel?.cart, !cart.items.isEmpty {
+        if let cart = cartService.cart, !cart.items.isEmpty {
             CheckoutButton(
-                price: cartViewModel?.totalPrice() ?? 0,
-                count: cartViewModel?.totalCount() ?? 0
+                price: cartService.totalPrice(),
+                count: cartService.totalCount()
             ) {
                 isPresented.wrappedValue = true
             }
@@ -108,7 +108,7 @@ struct CatalogView: View {
                     ProductGridView(
                         productPreviewModel: catalogModel.products.data.filter { catalogModel.favoritesService.isFavorite(productId: $0.id) },
                         title: "Избранное",
-                        cartViewModel: cartViewModel,
+                        cartService: cartService,
                         favoritesService: catalogModel.favoritesService
                     )
                     .task(id: catalogModel.selectedTab) {
@@ -116,16 +116,6 @@ struct CatalogView: View {
                             await catalogModel.loadAllProducts()
                         }
                     }
-                }
-            }
-            .onAppear {
-                if cartViewModel == nil {
-                    cartViewModel = CartViewModel(
-                        cartActor: CartActor(
-                            container: context.container,
-                            networkService: NetworkServicesImpl()
-                        )
-                    )
                 }
             }
             .onChange(of: catalogModel.products.data) { _, newValue in
@@ -144,18 +134,16 @@ struct CatalogView: View {
             }
             .navigationTitle("")
             .sheet(isPresented: $isCartPresented) {
-                if let cartViewModel {
-                    CartView(
-                        addressModel: addressModel,
-                        cartViewModel: cartViewModel
-                    )
-                }
+                CartView(
+                    addressModel: addressModel,
+                    cartService: cartService
+                )
             }
             .sheet(isPresented: $isSearchPresented) {
                 SearchView(
                     searchViewModel: searchViewModel,
-                    cartViewModel: cartViewModel,
-                    favoritesService: catalogModel.favoritesService
+                    favoritesService: catalogModel.favoritesService,
+                    cartService: cartService
                 )
             }
             .sheet(isPresented: $isAddNewAddressPresented) {
@@ -167,14 +155,14 @@ struct CatalogView: View {
                     addressModel: addressModel,
                     name: category.name,
                     category: category.id,
-                    cartViewModel: cartViewModel,
+                    cartService: cartService,
                     searchViewModel: searchViewModel
                 )
             }
             .task {
                 await catalogModel.loadCategories()
                 await catalogModel.loadProductsList()
-                await cartViewModel?.loadCart()
+                await cartService.loadCart()
                 await addressModel.loadAddress()
                 searchViewModel.allProducts = catalogModel.products.data
             }
@@ -183,6 +171,13 @@ struct CatalogView: View {
 }
 
 #Preview {
-    CatalogView()
+    CatalogView(
+        cartService: CartService(
+            cartActor: CartActor(
+                container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                networkService: NetworkServicesImpl()
+            )
+        )
+    )
         .modelContainer(for: [PersistedCart.self, PersistedCartItem.self])
 }
