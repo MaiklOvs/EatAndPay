@@ -10,22 +10,24 @@ import DesignSystem
 
 struct CardDetailsView: View {
 
-    @State private var viewModel = ProductCardViewModel(networkService: NetworkServicesImpl())
+
     @Bindable var cartViewModel: CartViewModel
+    @Bindable var favoritesService: FavoritesService
+
     let productId: String
-    let onFavoriteToggle: () -> Void
-    @State private var isFavorite = false
+
+    @State private var viewModel = ProductCardViewModel(networkService: NetworkServicesImpl())
     @State private var isReviewsPresented = false
     @Environment(\.dismiss) private var dismiss
 
     init(
         productId: String,
         cartViewModel: CartViewModel,
-        onFavoriteToggle: @escaping () -> Void
+        favoriteServices: FavoritesService
     ) {
         self.productId = productId
         self.cartViewModel = cartViewModel
-        self.onFavoriteToggle = onFavoriteToggle
+        self.favoritesService = favoriteServices
     }
 
     var body: some View {
@@ -59,10 +61,11 @@ struct CardDetailsView: View {
                     .frame(width: 297, height: 39, alignment: .leading)
                 Spacer()
                 Button {
-                    isFavorite.toggle()
-                    onFavoriteToggle()
+                    Task {
+                        await favoritesService.toggleFavorite(for: productId)
+                    }
                 } label: {
-                    Image(isFavorite ? .isFavorite : .heart)
+                    Image(favoritesService.isFavorite(productId: productId) ? .isFavorite : .heart)
                         .frame(width: 44, height: 44)
                 }
             }
@@ -134,7 +137,6 @@ struct CardDetailsView: View {
         .padding(.horizontal, 12)
         .task(id: productId) {
             await viewModel.loadProductDetails(id: productId)
-            isFavorite = viewModel.productCard?.isFavorite ?? false
         }
     }
 }
@@ -143,6 +145,6 @@ struct CardDetailsView: View {
     CardDetailsView(
         productId: "",
         cartViewModel: CartViewModel(networkService: NetworkServicesImpl()),
-        onFavoriteToggle: {  }
+        favoriteServices: FavoritesService(networkServices: NetworkServicesImpl())
     )
 }

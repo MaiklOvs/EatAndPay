@@ -14,7 +14,10 @@ struct CatalogView: View {
     @Environment(\.modelContext)
     private var context
 
-    @State private var catalogModel = CatalogModel(networkService: NetworkServicesImpl())
+    @State private var catalogModel = CatalogModel(
+        networkService: NetworkServicesImpl(),
+        favoritesService: FavoritesService(networkServices: NetworkServicesImpl())
+    )
     @State private var cartViewModel = CartViewModel(networkService: NetworkServicesImpl())
     @State private var searchViewModel = SearchViewModel(allProducts: [])
     @State private var addressModel = AddressModel(networkService: NetworkServicesImpl())
@@ -104,14 +107,10 @@ struct CatalogView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 case .favorites:
                     ProductGridView(
-                        productPreviewModel: catalogModel.products.data.filter { $0.isFavorite },
+                        productPreviewModel: catalogModel.products.data.filter { catalogModel.favoritesService.isFavorite(productId: $0.id)},
                         title: "Избранное",
-                        onFavoriteToggle: { productId in
-                            Task {
-                                await catalogModel.toggleFavorite(for: productId)
-                            }
-                        },
-                        cartViewModel: cartViewModel
+                        cartViewModel: cartViewModel,
+                        favoritesService: catalogModel.favoritesService
                     )
                 }
             }
@@ -138,16 +137,9 @@ struct CatalogView: View {
             }
             .sheet(isPresented: $isSearchPresented) {
                 SearchView(
-                    onFavoriteToggle: { productId in
-                        Task {
-                            await catalogModel.toggleFavorite(for: productId)
-                        }
-                        if let index = searchViewModel.allProducts.firstIndex(where: { $0.id == productId }) {
-                            searchViewModel.allProducts[index].isFavorite.toggle()
-                        }
-                    },
                     searchViewModel: searchViewModel,
-                    cartViewModel: cartViewModel
+                    cartViewModel: cartViewModel,
+                    favoritesService: catalogModel.favoritesService
                 )
             }
             .sheet(isPresented: $isAddNewAddressPresented) {

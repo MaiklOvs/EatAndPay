@@ -38,12 +38,8 @@ struct ProductListView: View {
         ProductGridView(
             productPreviewModel: catalogModel.products.data,
             title: name,
-            onFavoriteToggle: { productId in
-                Task {
-                    await catalogModel.toggleFavorite(for: productId)
-                }
-            },
-            cartViewModel: cartViewModel
+            cartViewModel: cartViewModel,
+            favoritesService: catalogModel.favoritesService
         )
         .overlay(alignment: .bottom) {
             HStack {
@@ -67,16 +63,9 @@ struct ProductListView: View {
         }
         .sheet(isPresented: $isSearchPresented) {
             SearchView(
-                onFavoriteToggle: { productId in
-                    Task {
-                        await catalogModel.toggleFavorite(for: productId)
-                    }
-                    if let index = searchViewModel.allProducts.firstIndex(where: { $0.id == productId }) {
-                        searchViewModel.allProducts[index].isFavorite.toggle()
-                    }
-                },
                 searchViewModel: searchViewModel,
-                cartViewModel: cartViewModel
+                cartViewModel: cartViewModel,
+                favoritesService: catalogModel.favoritesService
             )
         }
     }
@@ -84,7 +73,10 @@ struct ProductListView: View {
 
 #Preview {
     ProductListView(
-        catalogModel: CatalogModel(networkService: NetworkServicesImpl()),
+        catalogModel: CatalogModel(
+            networkService: NetworkServicesImpl(),
+            favoritesService: FavoritesService(networkServices: NetworkServicesImpl())
+        ),
         addressModel: AddressModel(networkService: NetworkServicesImpl()),
         name: "Выпечка",
         category: "bakery",

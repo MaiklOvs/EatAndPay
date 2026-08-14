@@ -13,8 +13,8 @@ struct ProductGridView: View {
     let productPreviewModel: [ProductPreviewModel]
     let title: String
 
-    let onFavoriteToggle: (String) -> Void
     @Bindable var cartViewModel: CartViewModel
+    @Bindable var favoritesService: FavoritesService
     @State private var selectedProduct: ProductPreviewModel?
 
     var body: some View {
@@ -37,9 +37,7 @@ struct ProductGridView: View {
                 ForEach(productPreviewModel) { data in
                     ProductCardView(
                         product: data,
-                        onFavoriteToggle: {
-                            onFavoriteToggle(data.id)
-                        },
+                        favoritesService: favoritesService,
                         cartViewModel: cartViewModel
                     )
                     .frame(maxWidth: .infinity)
@@ -54,7 +52,7 @@ struct ProductGridView: View {
             CardDetailsView(
                 productId: product.id,
                 cartViewModel: cartViewModel,
-                onFavoriteToggle: { onFavoriteToggle(product.id) }
+                favoriteServices: favoritesService
             )
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
@@ -66,7 +64,7 @@ struct ProductGridView: View {
     ProductGridView(
         productPreviewModel: [],
         title: "Выпечка",
-        onFavoriteToggle: { _ in },
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+        cartViewModel: CartViewModel(networkService: NetworkServicesImpl()),
+        favoritesService: FavoritesService(networkServices: NetworkServicesImpl())
     )
 }

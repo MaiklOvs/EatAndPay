@@ -11,7 +11,8 @@ import DesignSystem
 struct ProductCardView: View {
 
     let product: ProductPreviewModel
-    let onFavoriteToggle: () -> Void
+    
+    @Bindable var favoritesService: FavoritesService
     @Bindable var cartViewModel: CartViewModel
 
     var body: some View {
@@ -25,7 +26,7 @@ struct ProductCardView: View {
                 case .success(let image):
                     image
                         .resizable()
-                case .failure(let error):
+                case .failure(_):
                     DSImagePlaceholder()
                 @unknown default:
                     DSImagePlaceholder()
@@ -36,9 +37,11 @@ struct ProductCardView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay(alignment: .topTrailing) {
                 Button {
-                    onFavoriteToggle()
+                    Task {
+                        await favoritesService.toggleFavorite(for: product.id)
+                    }
                 } label: {
-                    if product.isFavorite {
+                    if favoritesService.isFavorite(productId: product.id) {
                         Image(.isFavorite)
                             .padding(10)
                     } else {
@@ -92,7 +95,7 @@ struct ProductCardView: View {
                             isFavorite: false,
                             discount: 100
                         ),
-                    onFavoriteToggle: {  },
+                    favoritesService: FavoritesService(networkServices: NetworkServicesImpl()),
                     cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
     )
 }
