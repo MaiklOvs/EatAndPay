@@ -8,7 +8,7 @@ import OpenAPIRuntime
 import OpenAPIURLSession
 import Foundation
 
-final class NetworkServicesImpl: NetworkServices {
+final class NetworkServicesImpl: NetworkServices, Sendable {
 
     let client = Client(
         serverURL: URL(string: "https://eat-and-pay.t02.ru")!,

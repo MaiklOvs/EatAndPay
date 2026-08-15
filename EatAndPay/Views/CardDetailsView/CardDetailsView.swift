@@ -16,14 +16,14 @@ struct CardDetailsView: View {
     var cartService: CartService
     let productId: String
 
-    @State private var viewModel = ProductCardViewModel(networkService: NetworkServicesImpl())
+    @State private var productService = ProductService(networkService: NetworkServicesImpl())
     @State private var isReviewsPresented = false
     @Environment(\.dismiss) private var dismiss
 
     init(
         productId: String,
         cartService: CartService,
-        favoriteServices: FavoritesService,
+        favoriteServices: FavoritesService
     ) {
         self.productId = productId
         self.cartService = cartService
@@ -31,9 +31,9 @@ struct CardDetailsView: View {
     }
 
     var body: some View {
-        let _ = print("CardDetailsView image: \(viewModel.productCard?.image ?? "nil")")
+        let _ = print("CardDetailsView image: \(productService.productCard?.image ?? "nil")")
         VStack(alignment: .leading) {
-            AsyncImage(url: URL(string: viewModel.productCard?.image ?? "")) { image in
+            AsyncImage(url: URL(string: productService.productCard?.image ?? "")) { image in
                 switch image {
                 case .success:
                     image.image?.resizable()
@@ -56,7 +56,7 @@ struct CardDetailsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
 
             HStack(spacing: 10) {
-                Text("\(viewModel.productCard?.price.formatted() ?? "0") ₽")
+                Text("\(productService.productCard?.price.formatted() ?? "0") ₽")
                     .font(DSTypography.hugeTitle)
                     .frame(width: 297, height: 39, alignment: .leading)
                 Spacer()
@@ -70,9 +70,9 @@ struct CardDetailsView: View {
                 }
             }
             HStack(spacing: 10) {
-                Text(viewModel.productCard?.name ?? "")
+                Text(productService.productCard?.name ?? "")
                     .font(DSTypography.cardDetailsTitle)
-                Text("\(viewModel.productCard?.weight.formatted() ?? "") г")
+                Text("\(productService.productCard?.weight.formatted() ?? "") г")
                     .font(DSTypography.cardDetailsTitle)
                     .foregroundStyle(DSColors.textSecondary)
             }
@@ -82,9 +82,9 @@ struct CardDetailsView: View {
             } label: {
                 HStack(spacing: 10) {
                     HStack(spacing: 6) {
-                        Text(viewModel.productCard?.rating.formatted() ?? "")
+                        Text(productService.productCard?.rating.formatted() ?? "")
                             .font(DSTypography.cardDetailsTitle)
-                        ForEach(0..<Int(ceil(viewModel.productCard?.rating ?? 5)), id: \.self) { _ in
+                        ForEach(0..<Int(ceil(productService.productCard?.rating ?? 5)), id: \.self) { _ in
                             Image(.star)
                                 .renderingMode(.template)
                                 .foregroundStyle(Color.primary)
@@ -94,7 +94,7 @@ struct CardDetailsView: View {
                         Image(.messages)
                             .renderingMode(.template)
                             .foregroundStyle(Color.primary)
-                        Text("\(viewModel.productCard?.reviews?.count.formatted() ?? " 0")  отзывов")
+                        Text("\(productService.productCard?.reviews?.count.formatted() ?? " 0")  отзывов")
                             .font(DSTypography.cardDetailsTitle)
                     }
                 }
@@ -103,19 +103,19 @@ struct CardDetailsView: View {
             .buttonStyle(.plain)
             .sheet(isPresented: $isReviewsPresented) {
                 ReviewsView(
-                    viewModel: viewModel
+                    productService: productService
                 )
             }
 
             VStack(alignment: .leading, spacing: 0) {
-                Text(viewModel.productCard?.description ?? "")
+                Text(productService.productCard?.description ?? "")
                     .font(DSTypography.descriptionTitle)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Spacer()
             }
             DSButton(
                 action: {
-                    if let product = viewModel.productCard {
+                    if let product = productService.productCard {
                         Task {
                             await cartService.add(
                                 product: ProductPreviewModel(
@@ -138,7 +138,7 @@ struct CardDetailsView: View {
         }
         .padding(.horizontal, 12)
         .task(id: productId) {
-            await viewModel.loadProductDetails(id: productId)
+            await productService.loadProductDetails(id: productId)
         }
     }
 }

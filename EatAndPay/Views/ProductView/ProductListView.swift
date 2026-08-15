@@ -37,10 +37,10 @@ struct ProductListView: View {
 
     var body: some View {
         ProductGridView(
-            productPreviewModel: catalogModel.products.data,
+            productPreviewModel: catalogModel.catalogService.products.data,
             title: name,
             cartService: cartService,
-            favoritesService: catalogModel.favoritesService
+            favoritesService: catalogModel.catalogService.favoritesService
         )
         .overlay(alignment: .bottom) {
             HStack {
@@ -54,7 +54,7 @@ struct ProductListView: View {
             .padding(.bottom, 12)
         }
         .task {
-            await catalogModel.loadProductsList(query: Operations.get_sol_products.Input.Query(category: category))
+            await catalogModel.catalogService.loadProductsList(query: Operations.get_sol_products.Input.Query(category: category))
         }
         .sheet(isPresented: $isCartPresented) {
             CartView(
@@ -65,7 +65,7 @@ struct ProductListView: View {
         .sheet(isPresented: $isSearchPresented) {
             SearchView(
                 searchViewModel: searchViewModel,
-                favoritesService: catalogModel.favoritesService,
+                favoritesService: catalogModel.catalogService.favoritesService,
                 cartService: cartService
             )
         }
@@ -73,19 +73,24 @@ struct ProductListView: View {
 }
 
 #Preview {
+    let networkService = NetworkServicesImpl()
+    let favoritesService = FavoritesService(networkServices: networkService)
+    let catalogService = CatalogService(
+        networkService: networkService,
+        favoritesService: favoritesService
+    )
+    let catalogModel = CatalogModel(catalogService: catalogService)
+
     ProductListView(
-        catalogModel: CatalogModel(
-            networkService: NetworkServicesImpl(),
-            favoritesService: FavoritesService(networkServices: NetworkServicesImpl())
-        ),
-        addressModel: AddressModel(networkService: NetworkServicesImpl()),
+        catalogModel: catalogModel,
+        addressModel: AddressModel(networkService: networkService),
         name: "Выпечка",
         category: "bakery",
         cartService:
             CartService(
                 cartActor: CartActor(
                     container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
-                    networkService: NetworkServicesImpl()
+                    networkService: networkService
                 )
             ),
         searchViewModel: SearchViewModel(allProducts: [])

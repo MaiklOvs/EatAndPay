@@ -13,10 +13,7 @@ struct CatalogView: View {
 
     @Environment(\.modelContext) private var context
 
-    @State private var catalogModel = CatalogModel(
-        networkService: NetworkServicesImpl(),
-        favoritesService: FavoritesService(networkServices: NetworkServicesImpl())
-    )
+    @State private var catalogModel: CatalogModel
     var cartService: CartService
     @State private var searchViewModel = SearchViewModel(allProducts: [])
     @State private var addressModel = AddressModel(networkService: NetworkServicesImpl())
@@ -24,6 +21,11 @@ struct CatalogView: View {
     @State private var isCartPresented = false
     @State private var isSearchPresented = false
     @State private var isAddNewAddressPresented = false
+
+    init(catalogModel: CatalogModel, cartService: CartService) {
+        self._catalogModel = State(initialValue: catalogModel)
+        self.cartService = cartService
+    }
 
     @ViewBuilder
     private func checkoutButtonView(isPresented: Binding<Bool>) -> some View {
@@ -89,7 +91,7 @@ struct CatalogView: View {
                                 ],
                                 spacing: 2
                             ) {
-                                ForEach(catalogModel.categories) { category in
+                                ForEach(catalogModel.catalogService.categories) { category in
                                     Button {
                                         path.append(category)
                                     } label: {
@@ -106,19 +108,19 @@ struct CatalogView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 case .favorites:
                     ProductGridView(
-                        productPreviewModel: catalogModel.products.data.filter { catalogModel.favoritesService.isFavorite(productId: $0.id) },
+                        productPreviewModel: catalogModel.catalogService.products.data.filter { catalogModel.catalogService.favoritesService.isFavorite(productId: $0.id) },
                         title: "Избранное",
                         cartService: cartService,
-                        favoritesService: catalogModel.favoritesService
+                        favoritesService: catalogModel.catalogService.favoritesService
                     )
                     .task(id: catalogModel.selectedTab) {
                         if catalogModel.selectedTab == .favorites {
-                            await catalogModel.loadAllProducts()
+                            await catalogModel.catalogService.loadAllProducts()
                         }
                     }
                 }
             }
-            .onChange(of: catalogModel.products.data) { _, newValue in
+            .onChange(of: catalogModel.catalogService.products.data) { _, newValue in
                 searchViewModel.allProducts = newValue
             }
             .overlay(alignment: .bottom) {
@@ -142,7 +144,7 @@ struct CatalogView: View {
             .sheet(isPresented: $isSearchPresented) {
                 SearchView(
                     searchViewModel: searchViewModel,
-                    favoritesService: catalogModel.favoritesService,
+                    favoritesService: catalogModel.catalogService.favoritesService,
                     cartService: cartService
                 )
             }
@@ -160,24 +162,34 @@ struct CatalogView: View {
                 )
             }
             .task {
-                await catalogModel.loadCategories()
-                await catalogModel.loadProductsList()
+                await catalogModel.catalogService.loadCategories()
+                await catalogModel.catalogService.loadProductsList()
                 await cartService.loadCart()
                 await addressModel.loadAddress()
-                searchViewModel.allProducts = catalogModel.products.data
+                searchViewModel.allProducts = catalogModel.catalogService.products.data
             }
         }
     }
 }
 
 #Preview {
-    CatalogView(
-        cartService: CartService(
-            cartActor: CartActor(
-                container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
-                networkService: NetworkServicesImpl()
-            )
+    let networkService = NetworkServicesImpl()
+    let favoritesService = FavoritesService(networkServices: networkService)
+    let catalogService = CatalogService(
+        networkService: networkService,
+        favoritesService: favoritesService
+    )
+    let catalogModel = CatalogModel(catalogService: catalogService)
+    let cartService = CartService(
+        cartActor: CartActor(
+            container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+            networkService: networkService
         )
+    )
+
+    CatalogView(
+        catalogModel: catalogModel,
+        cartService: cartService
     )
         .modelContainer(for: [PersistedCart.self, PersistedCartItem.self])
 }
