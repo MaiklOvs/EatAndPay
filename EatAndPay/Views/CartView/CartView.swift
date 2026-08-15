@@ -7,12 +7,13 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct CartView: View {
 
     private let addressModel: AddressModel
 
-    @Bindable var cartViewModel: CartViewModel
+    var cartService: CartService
 
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var snackbarManager: SnackbarManager
@@ -20,9 +21,9 @@ struct CartView: View {
     @State private var isAddNewAddressPresented = false
     @State private var isSuccessOrderPresented = false
 
-    init(addressModel: AddressModel, cartViewModel: CartViewModel) {
+    init(addressModel: AddressModel, cartService: CartService) {
         self.addressModel = addressModel
-        self.cartViewModel = cartViewModel
+        self.cartService = cartService
     }
 
     func countString(count: Int) -> String {
@@ -50,7 +51,7 @@ struct CartView: View {
                     Text("Корзина")
                         .font(DSTypography.hugeTitle)
                         .padding(.top, 10)
-                    Text(cartViewModel.totalCount().formatted())
+                    Text(cartService.totalCount().formatted())
                         .font(DSTypography.hugeTitle)
                         .foregroundStyle(DSColors.textSecondary)
                         .padding(.top, 10)
@@ -61,12 +62,12 @@ struct CartView: View {
                 }
 
                 HStack {
-                    Text("\(cartViewModel.cart?.deliveryTime.formatted() ?? "0") минут")
-                    Text(countString(count: cartViewModel.totalCount()))
+                    Text("\(cartService.cart?.deliveryTime.formatted() ?? "0") минут")
+                    Text(countString(count: cartService.totalCount()))
                 }
                 ScrollView {
                     LazyVStack(alignment: .leading) {
-                        ForEach(cartViewModel.cart?.items ?? []) { item in
+                        ForEach(cartService.cart?.items ?? []) { item in
                             ProductInCart(cartItem: CartItem(
                                 id: item.id,
                                 image: item.image,
@@ -75,7 +76,7 @@ struct CartView: View {
                                 price: item.price * item.quantity,
                                 quantity: item.quantity,
                                 available: item.available
-                            ), cartViewModel: cartViewModel)
+                            ), cartService: cartService)
                         }
                     }
                 }
@@ -89,18 +90,18 @@ struct CartView: View {
                     Text("Итого:")
                         .font(DSTypography.hugeTitle)
                         .padding(.top, 10)
-                    Text(cartViewModel.totalPrice().formatted() + " ₽")
+                    Text(cartService.totalPrice().formatted() + " ₽")
                         .font(DSTypography.hugeTitle)
                         .foregroundStyle(DSColors.textSecondary)
                         .padding(.top, 10)
                 }
                 CheckoutButton(
-                    price: cartViewModel.totalPrice(),
-                    count: cartViewModel.totalCount(),
+                    price: cartService.totalPrice(),
+                    count: cartService.totalCount(),
                     isExpanded: true,
                     action: {
                         Task {
-                            let success = await cartViewModel.makeOrder(
+                            let success = await cartService.makeOrder(
                                 paymentMethod: "card",
                                 addressID: addressModel.selectedAddress?.id ?? ""
                             )
@@ -126,7 +127,7 @@ struct CartView: View {
                 )
             }
             .task {
-                await cartViewModel.loadCart()
+                await cartService.loadCart()
             }
 
             if let message = snackbarManager.message {
@@ -142,6 +143,12 @@ struct CartView: View {
 #Preview {
     CartView(
         addressModel: AddressModel(networkService: NetworkServicesImpl()),
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+        cartService:
+            CartService(
+                cartActor: CartActor(
+                    container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                    networkService: NetworkServicesImpl()
+                )
+            )
     )
 }

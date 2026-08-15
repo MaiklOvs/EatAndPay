@@ -7,16 +7,20 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct ProductCardView: View {
 
     let product: ProductPreviewModel
-    let onFavoriteToggle: () -> Void
-    @Bindable var cartViewModel: CartViewModel
+    
+    @Bindable var favoritesService: FavoritesService
+
+    var cartService: CartService
 
     var body: some View {
-        let quantity = cartViewModel.quantity(for: product.id)
+        let quantity = cartService.quantity(for: product.id)
         let displayedPrice = quantity > 0 ? product.price * quantity : product.price
+
         VStack(alignment: .leading) {
             AsyncImage(url: URL(string: product.image)) { phase in
                 switch phase {
@@ -25,7 +29,7 @@ struct ProductCardView: View {
                 case .success(let image):
                     image
                         .resizable()
-                case .failure(let error):
+                case .failure(_):
                     DSImagePlaceholder()
                 @unknown default:
                     DSImagePlaceholder()
@@ -36,9 +40,11 @@ struct ProductCardView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay(alignment: .topTrailing) {
                 Button {
-                    onFavoriteToggle()
+                    Task {
+                        await favoritesService.toggleFavorite(for: product.id)
+                    }
                 } label: {
-                    if product.isFavorite {
+                    if favoritesService.isFavorite(productId: product.id) {
                         Image(.isFavorite)
                             .padding(10)
                     } else {
@@ -70,8 +76,16 @@ struct ProductCardView: View {
             CartButton(
                 price: displayedPrice,
                 count: quantity,
-                onDecrement: { cartViewModel.remove(product: product) },
-                onIncrement: { cartViewModel.add(product: product) }
+                onDecrement: {
+                    Task {
+                        await cartService.remove(product: product)
+                    }
+                },
+                onIncrement: {
+                    Task {
+                        await cartService.add(product: product)
+                    }
+                }
             )
             .padding(.bottom, 10)
         }
@@ -92,7 +106,10 @@ struct ProductCardView: View {
                             isFavorite: false,
                             discount: 100
                         ),
-                    onFavoriteToggle: {  },
-                    cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+                    favoritesService: FavoritesService(networkServices: NetworkServicesImpl()), cartService: CartService(
+                        cartActor: CartActor(
+                        container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                        networkService: NetworkServicesImpl()
+                    ))
     )
 }

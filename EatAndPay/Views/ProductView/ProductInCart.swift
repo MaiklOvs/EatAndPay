@@ -7,11 +7,12 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct ProductInCart: View {
 
     let cartItem: CartItem
-    @Bindable var cartViewModel: CartViewModel
+    var cartService: CartService
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -31,8 +32,16 @@ struct ProductInCart: View {
                 }
                 CountButton(
                     count: cartItem.quantity,
-                    onDecrement: { cartViewModel.remove(productId: cartItem.id, price: cartItem.price) },
-                    onIncrement: { cartViewModel.add(productId: cartItem.id, price: cartItem.price) }
+                    onDecrement: {
+                        Task {
+                            await cartService.remove(productId: cartItem.id, price: cartItem.price)
+                        }
+                    },
+                    onIncrement: {
+                        Task {
+                            await cartService.add(productId: cartItem.id, price: cartItem.price)
+                        }
+                    }
                 )
             }
             .padding(.bottom, 21)
@@ -50,6 +59,12 @@ struct ProductInCart: View {
         quantity: 1,
         available: true
     ),
-                  cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+                  cartService:
+                    CartService(
+                        cartActor: CartActor(
+                            container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                            networkService: NetworkServicesImpl()
+                        )
+                    )
     )
 }
