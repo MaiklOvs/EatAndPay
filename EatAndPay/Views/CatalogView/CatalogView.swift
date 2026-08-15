@@ -147,6 +147,9 @@ struct CatalogView: View {
                     favoritesService: catalogModel.catalogService.favoritesService,
                     cartService: cartService
                 )
+                .task {
+                    await catalogModel.catalogService.loadAllProducts()
+                }
             }
             .sheet(isPresented: $isAddNewAddressPresented) {
                 AddressListView(addressModel: addressModel)

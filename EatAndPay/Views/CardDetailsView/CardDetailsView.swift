@@ -31,20 +31,19 @@ struct CardDetailsView: View {
     }
 
     var body: some View {
-        let _ = print("CardDetailsView image: \(productService.productCard?.image ?? "nil")")
         VStack(alignment: .leading) {
-            AsyncImage(url: URL(string: productService.productCard?.image ?? "")) { image in
-                switch image {
-                case .success:
-                    image.image?.resizable()
+            CachedAsyncImage(
+                urlString: productService.productCard?.image ?? "",
+                contentMode: .fit,
+                content: { image in
+                    image
+                        .resizable()
                         .aspectRatio(contentMode: .fill)
-                case .failure(let error):
-                    let _ = print("ProductCardView AsyncImage error: \(error)")
-                    DSImagePlaceholder()
-                default:
+                },
+                placeholder: {
                     DSImagePlaceholder()
                 }
-            }
+            )
             .frame(width: 375, height: 440)
             .overlay {
                 CloseButton(action: { dismiss() } )
