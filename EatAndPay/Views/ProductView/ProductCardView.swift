@@ -82,7 +82,8 @@ struct ProductCardView: View {
                     Task {
                         await cartService.add(product: product)
                     }
-                }
+                },
+                isLoading: cartService.loadingItemIds.contains(product.id)
             )
             .padding(.bottom, 10)
         }

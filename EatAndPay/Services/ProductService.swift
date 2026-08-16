@@ -14,13 +14,23 @@ final class ProductService {
     private let networkService: NetworkServices
 
     var productCard: ProductCardModel?
+    var isLoadingCartDetail: Bool
+    var isLoadingAddReview: Bool
 
-    init(networkService: NetworkServices) {
+    init(
+        networkService: NetworkServices,
+        isLoadingCartDetail: Bool = false,
+        isLoadingAddReview: Bool = false
+    ) {
         self.networkService = networkService
+        self.isLoadingCartDetail = isLoadingCartDetail
+        self.isLoadingAddReview = isLoadingAddReview
     }
 
     func loadProductDetails(id: String) async {
+        defer { isLoadingCartDetail = false }
         do {
+            isLoadingCartDetail = true
             let product = try await networkService.fetchProductDetails(
                 query: Operations.get_sol_products_sol__lcub_id_rcub_.Input(
                     path: Operations.get_sol_products_sol__lcub_id_rcub_.Input.Path(id: id)
@@ -58,7 +68,9 @@ final class ProductService {
         content: String,
         images: [String] = []
     ) async {
+        defer { isLoadingAddReview = false }
         do {
+            isLoadingAddReview = true
             _ = try await networkService.addReviews(
                 productId: id,
                 rating: rating,

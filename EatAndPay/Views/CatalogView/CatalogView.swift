@@ -102,6 +102,14 @@ struct CatalogView: View {
                             }
                         }
                         .padding(.horizontal, 12)
+                        .overlay {
+                            if catalogModel.catalogService.isLoadingCategories {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                                    .scaleEffect(1.5)
+                                    .padding(.top, 100)
+                            }
+                        }
                     }
                 case .discounts:
                     Text("Скидки")
@@ -165,8 +173,9 @@ struct CatalogView: View {
                 )
             }
             .task {
-                await catalogModel.catalogService.loadCategories()
-                await catalogModel.catalogService.loadProductsList()
+                if catalogModel.catalogService.categories.isEmpty {
+                    await catalogModel.catalogService.loadCategories()
+                }
                 await cartService.loadCart()
                 await addressModel.loadAddress()
                 searchViewModel.allProducts = catalogModel.catalogService.products.data

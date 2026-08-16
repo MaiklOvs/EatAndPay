@@ -177,7 +177,8 @@ struct NewReviewsView: View {
                         dismiss()
                     }
                 },
-                buttonTitle: "Оставить отзыв"
+                buttonTitle: "Оставить отзыв",
+                isLoading: productService.isLoadingAddReview
             )
         }
         .padding(.horizontal, 12)

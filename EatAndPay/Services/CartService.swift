@@ -14,6 +14,7 @@ final class CartService {
     private let cartActor: CartActor
     var cart: Cart?
     var isMakingOrder = false
+    var loadingItemIds: Set<String> = []
 
     init(cartActor: CartActor, cart: Cart? = nil) {
         self.cartActor = cartActor
@@ -35,18 +36,26 @@ final class CartService {
     }
 
     func add(product: ProductPreviewModel) async {
+        loadingItemIds.insert(product.id)
+        defer { loadingItemIds.remove(product.id) }
         cart = await cartActor.add(product: product)
     }
 
     func remove(product: ProductPreviewModel) async {
+        loadingItemIds.insert(product.id)
+        defer { loadingItemIds.remove(product.id) }
         cart = await cartActor.remove(product: product)
     }
 
     func add(productId: String, price: Int) async {
+        loadingItemIds.insert(productId)
+        defer { loadingItemIds.remove(productId) }
         cart = await cartActor.add(productId: productId, price: price)
     }
 
     func remove(productId: String, price: Int) async {
+        loadingItemIds.insert(productId)
+        defer { loadingItemIds.remove(productId) }
         cart = await cartActor.remove(productId: productId, price: price)
     }
 

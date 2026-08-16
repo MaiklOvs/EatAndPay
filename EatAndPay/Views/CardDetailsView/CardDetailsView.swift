@@ -30,10 +30,11 @@ struct CardDetailsView: View {
         self.favoritesService = favoriteServices
     }
 
-    var body: some View {
+    @ViewBuilder
+    private func contentView(product: ProductCardModel) -> some View {
         VStack(alignment: .leading) {
             CachedAsyncImage(
-                urlString: productService.productCard?.image ?? "",
+                urlString: product.image,
                 content: { image in
                     image
                         .resizable()
@@ -54,7 +55,7 @@ struct CardDetailsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
 
             HStack(spacing: 10) {
-                Text("\(productService.productCard?.price.formatted() ?? "0") ₽")
+                Text("\(product.price.formatted()) ₽")
                     .font(DSTypography.hugeTitle)
                     .frame(width: 297, height: 39, alignment: .leading)
                 Spacer()
@@ -68,9 +69,9 @@ struct CardDetailsView: View {
                 }
             }
             HStack(spacing: 10) {
-                Text(productService.productCard?.name ?? "")
+                Text(product.name)
                     .font(DSTypography.cardDetailsTitle)
-                Text("\(productService.productCard?.weight.formatted() ?? "") г")
+                Text("\(product.weight.formatted()) г")
                     .font(DSTypography.cardDetailsTitle)
                     .foregroundStyle(DSColors.textSecondary)
             }
@@ -80,9 +81,9 @@ struct CardDetailsView: View {
             } label: {
                 HStack(spacing: 10) {
                     HStack(spacing: 6) {
-                        Text(productService.productCard?.rating.formatted() ?? "")
+                        Text(product.rating.formatted())
                             .font(DSTypography.cardDetailsTitle)
-                        ForEach(0..<Int(ceil(productService.productCard?.rating ?? 5)), id: \.self) { _ in
+                        ForEach(0..<Int(ceil(product.rating)), id: \.self) { _ in
                             Image(.star)
                                 .renderingMode(.template)
                                 .foregroundStyle(Color.primary)
@@ -92,7 +93,7 @@ struct CardDetailsView: View {
                         Image(.messages)
                             .renderingMode(.template)
                             .foregroundStyle(Color.primary)
-                        Text("\(productService.productCard?.reviews?.count.formatted() ?? " 0")  отзывов")
+                        Text("\(product.reviews?.count.formatted() ?? "0")  отзывов")
                             .font(DSTypography.cardDetailsTitle)
                     }
                 }
@@ -106,35 +107,46 @@ struct CardDetailsView: View {
             }
 
             VStack(alignment: .leading, spacing: 0) {
-                Text(productService.productCard?.description ?? "")
+                Text(product.description)
                     .font(DSTypography.descriptionTitle)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Spacer()
             }
             DSButton(
                 action: {
-                    if let product = productService.productCard {
-                        Task {
-                            await cartService.add(
-                                product: ProductPreviewModel(
-                                    id: product.id,
-                                    image: product.image,
-                                    name: product.name,
-                                    weight: product.weight,
-                                    price: product.price,
-                                    rating: product.rating,
-                                    reviewCount: 0,
-                                    isFavorite: product.isFavorite,
-                                    discount: product.discount
-                                )
+                    Task {
+                        await cartService.add(
+                            product: ProductPreviewModel(
+                                id: product.id,
+                                image: product.image,
+                                name: product.name,
+                                weight: product.weight,
+                                price: product.price,
+                                rating: product.rating,
+                                reviewCount: 0,
+                                isFavorite: product.isFavorite,
+                                discount: product.discount
                             )
-                        }
+                        )
                         dismiss()
                     }
-                }
+                },
+                isLoading: cartService.loadingItemIds.contains(productId)
             )
         }
         .padding(.horizontal, 12)
+    }
+
+    var body: some View {
+        ZStack {
+            if let product = productService.productCard {
+                contentView(product: product)
+            } else if productService.isLoadingCartDetail {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                    .scaleEffect(1.5)
+            }
+        }
         .task(id: productId) {
             await productService.loadProductDetails(id: productId)
         }

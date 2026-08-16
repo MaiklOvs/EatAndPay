@@ -53,6 +53,13 @@ struct ProductListView: View {
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
         }
+        .overlay {
+            if catalogModel.catalogService.isLoadingProducts && catalogModel.catalogService.products.data.isEmpty {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                    .scaleEffect(1.5)
+            }
+        }
         .task {
             await catalogModel.catalogService.loadProductsList(query: Operations.get_sol_products.Input.Query(category: category))
         }

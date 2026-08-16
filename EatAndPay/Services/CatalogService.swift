@@ -14,16 +14,28 @@ final class CatalogService {
     private let networkService: NetworkServices
     let favoritesService: FavoritesService
 
+    private var lastLoadedCategory: String?
+    var isLoadingCategories: Bool
+    var isLoadingProducts: Bool
     var products: Products = Products(currentPage: 1, totalPages: 1, data: [])
     var categories: [CatalogCard] = []
 
-    init(networkService: NetworkServices, favoritesService: FavoritesService) {
+    init(
+        networkService: NetworkServices,
+        favoritesService: FavoritesService,
+        isLoadingCategories: Bool = false,
+        isLoadingProducts: Bool = false
+    ) {
         self.networkService = networkService
         self.favoritesService = favoritesService
+        self.isLoadingCategories = isLoadingCategories
+        self.isLoadingProducts = isLoadingProducts
     }
 
     func loadCategories() async {
+        defer { isLoadingCategories = false }
         do {
+            isLoadingCategories = true
             let categoriesList = try await networkService.fetchCategories()
             categories = categoriesList.map { item in
                 CatalogCard(
@@ -76,7 +88,14 @@ final class CatalogService {
     }
 
     func loadProductsList(query: Operations.get_sol_products.Input.Query = .init()) async {
+        let category = query.category ?? ""
+        if lastLoadedCategory != category {
+            products = Products(currentPage: 1, totalPages: 1, data: [])
+            lastLoadedCategory = category
+        }
+        defer { isLoadingProducts = false }
         do {
+            isLoadingProducts = true
             let productsList = try await networkService.fetchProductsList(query: query)
             products = Products(
                 currentPage: productsList.currentPage,
