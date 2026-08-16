@@ -34,7 +34,6 @@ struct CardDetailsView: View {
         VStack(alignment: .leading) {
             CachedAsyncImage(
                 urlString: productService.productCard?.image ?? "",
-                contentMode: .fit,
                 content: { image in
                     image
                         .resizable()

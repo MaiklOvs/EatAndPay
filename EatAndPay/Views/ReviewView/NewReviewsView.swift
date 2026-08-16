@@ -54,12 +54,19 @@ struct NewReviewsView: View {
                 CloseButton(action: { dismiss() } )
             }
             HStack {
-                AsyncImage(url: URL(string: productService.productCard?.image ?? "")) { image in
-                    image.image?.resizable()
-                        .aspectRatio(contentMode: .fill)
-                }
-                .frame(width: 80, height: 80)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                CachedAsyncImage(
+                    urlString: productService.productCard?.image ?? "",
+                    content: { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 80, height: 80)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    },
+                    placeholder: {
+                        DSImagePlaceholder()
+                    }
+                )
                 VStack {
                     HStack(alignment: .top, spacing: 8) {
                         Text(productService.productCard?.name ?? "")

@@ -11,7 +11,6 @@ import DesignSystem
 struct CachedAsyncImage<Content: View, Placeholder: View>: View {
 
     let urlString: String
-    let contentMode: ContentMode
 
     @ViewBuilder let content: (Image) -> Content
     @ViewBuilder let placeholder: () -> Placeholder

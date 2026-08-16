@@ -22,22 +22,19 @@ struct ProductCardView: View {
         let displayedPrice = quantity > 0 ? product.price * quantity : product.price
 
         VStack(alignment: .leading) {
-            AsyncImage(url: URL(string: product.image)) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
-                case .success(let image):
+            CachedAsyncImage(
+                urlString: product.image,
+                content: { image in
                     image
                         .resizable()
-                case .failure(_):
-                    DSImagePlaceholder()
-                @unknown default:
+                        .frame(maxWidth: .infinity, minHeight: 256, maxHeight: 300)
+                        .aspectRatio(contentMode: .fit)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                },
+                placeholder: {
                     DSImagePlaceholder()
                 }
-            }
-            .frame(maxWidth: .infinity, minHeight: 256, maxHeight: 300)
-            .aspectRatio(contentMode: .fit)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
+            )
             .overlay(alignment: .topTrailing) {
                 Button {
                     Task {

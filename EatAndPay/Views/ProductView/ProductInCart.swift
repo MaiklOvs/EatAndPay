@@ -17,12 +17,19 @@ struct ProductInCart: View {
 
     var body: some View {
         HStack {
-            AsyncImage(url: URL(string: cartItem.image)) { image in
-                image.image?.resizable()
-                    .aspectRatio(contentMode: .fill)
-            }
-            .frame(width: 100, height: 100)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            CachedAsyncImage(
+                urlString: cartItem.image,
+                content: { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 100, height: 100)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                },
+                placeholder: {
+                    DSImagePlaceholder()
+                }
+            )
             VStack(alignment: .leading) {
                 Text(cartItem.price.formatted() + " ₽")
                 HStack {
