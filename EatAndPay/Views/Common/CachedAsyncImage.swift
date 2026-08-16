@@ -23,7 +23,7 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
             if let image {
                 content(Image(uiImage: image))
             } else if isLoading {
-                placeholder()
+                ProgressView()
             } else {
                 placeholder()
             }

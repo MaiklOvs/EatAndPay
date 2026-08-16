@@ -13,6 +13,7 @@ final class CartService {
 
     private let cartActor: CartActor
     var cart: Cart?
+    var isMakingOrder = false
 
     init(cartActor: CartActor, cart: Cart? = nil) {
         self.cartActor = cartActor
@@ -54,6 +55,8 @@ final class CartService {
     }
 
     func makeOrder(paymentMethod: String, addressID: String) async -> Bool {
+        isMakingOrder = true
+        defer { isMakingOrder = false }
         let success = await cartActor.makeOrder(paymentMethod: paymentMethod, addressID: addressID)
         if success {
             self.cart = nil

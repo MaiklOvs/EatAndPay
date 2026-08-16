@@ -99,6 +99,7 @@ struct CartView: View {
                     price: cartService.totalPrice(),
                     count: cartService.totalCount(),
                     isExpanded: true,
+                    isLoading: cartService.isMakingOrder,
                     action: {
                         Task {
                             let success = await cartService.makeOrder(

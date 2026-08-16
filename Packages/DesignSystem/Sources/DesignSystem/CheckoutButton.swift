@@ -15,16 +15,19 @@ public struct CheckoutButton: View {
     private let price: Int
     private let count: Int
     private let isExpanded: Bool
+    private let isLoading: Bool
 
     public init(
         price: Int,
         count: Int,
         isExpanded: Bool = false,
+        isLoading: Bool = false,
         action: @escaping () -> Void) {
             self.action = action
             self.price = price
             self.count = count
             self.isExpanded = isExpanded
+            self.isLoading = isLoading
         }
 
     func countString(count: Int) -> String {
@@ -48,36 +51,47 @@ public struct CheckoutButton: View {
     public var body: some View {
         Button(action: action) {
             HStack(spacing: 20) {
-                VStack(alignment: .leading) {
-                    Text(price.formatted() + "₽")
-                        .font(.system(size: 18, weight: .semibold))
-                        .padding(.leading, 10)
-                        .padding(.top, 7.5)
-                    Text(countString(count: count))
-                        .font(.system(size: 14, weight: .semibold))
-                        .padding(.leading, 10)
-                        .padding(.bottom, 7.5)
-                }
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .padding(.bottom, 14.5)
+                        .padding(.top, 11.5)
+                } else {
+                    VStack(alignment: .leading) {
+                        Text(price.formatted() + "₽")
+                            .font(.system(size: 18, weight: .semibold))
+                            .padding(.leading, 10)
+                            .padding(.top, 7.5)
+                        Text(countString(count: count))
+                            .font(.system(size: 14, weight: .semibold))
+                            .padding(.leading, 10)
+                            .padding(.bottom, 7.5)
+                    }
 
-                if isExpanded {
-                    Spacer()
+                    if isExpanded {
+                        Spacer()
+                    }
+                    Text("Оформить")
+                        .font(.system(size: 20, weight: .semibold))
+                        .padding(.trailing, 18)
+                        .padding(.bottom, 14.5)
+                        .padding(.top, 11.5)
                 }
-
-                Text("Оформить")
-                    .font(.system(size: 20, weight: .semibold))
-                    .padding(.trailing, 18)
-                    .padding(.bottom, 14.5)
-                    .padding(.top, 11.5)
             }
             .frame(maxWidth: isExpanded ? .infinity : nil)
             .foregroundStyle(.white)
             .background(DSColors.accentGradient)
             .cornerRadius(12)
         }
+        .disabled(isLoading)
     }
 }
 
 #Preview {
-    CheckoutButton(price: 100, count: 4) {}
+    CheckoutButton(
+        price: 100,
+        count: 4,
+        isLoading: true
+    ) {}
         .padding()
 }
