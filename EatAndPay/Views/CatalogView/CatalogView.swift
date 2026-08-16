@@ -153,7 +153,8 @@ struct CatalogView: View {
                 SearchView(
                     searchViewModel: searchViewModel,
                     favoritesService: catalogModel.catalogService.favoritesService,
-                    cartService: cartService
+                    cartService: cartService,
+                    isLoading: catalogModel.catalogService.isLoadingProducts
                 )
                 .task {
                     await catalogModel.catalogService.loadAllProducts()

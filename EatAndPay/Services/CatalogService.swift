@@ -53,9 +53,10 @@ final class CatalogService {
         var currentPage = 1
         var allData: [ProductPreviewModel] = []
         var totalPages = 1
-
+        defer { isLoadingProducts = false }
         repeat {
             do {
+                isLoadingProducts = true
                 var pageQuery = query
                 pageQuery.page = currentPage
                 let productsList = try await networkService.fetchProductsList(query: pageQuery)

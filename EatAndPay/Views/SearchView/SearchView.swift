@@ -16,6 +16,7 @@ struct SearchView: View {
 
 
     var cartService: CartService
+    var isLoading: Bool = false
 
     @State private var isSearchBarFocused = false
     @Environment(\.dismiss) private var dismiss
@@ -30,57 +31,63 @@ struct SearchView: View {
                 .padding(.top, 12)
                 Spacer()
             }
-            ScrollView {
-                LazyVStack {
-                    if searchViewModel.searchText.isEmpty && isSearchBarFocused {
-                        ForEach(searchViewModel.searchHistory, id: \.self) { query in
-                            Button {
-                                searchViewModel.searchText = query
-                            } label: {
-                                Text(query)
-                                    .font(DSTypography.searchTitle)
-                                    .foregroundStyle(.black)
-                                    .lineLimit(1)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.leading, 12)
+            if isLoading {
+                Spacer()
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                Spacer()
+            } else {
+                ScrollView {
+                    LazyVStack {
+                        if searchViewModel.searchText.isEmpty && isSearchBarFocused {
+                            ForEach(searchViewModel.searchHistory, id: \.self) { query in
+                                Button {
+                                    searchViewModel.searchText = query
+                                } label: {
+                                    Text(query)
+                                        .font(DSTypography.searchTitle)
+                                        .foregroundStyle(.black)
+                                        .lineLimit(1)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.leading, 12)
+                                }
                             }
                         }
-                    }
-                    if !searchViewModel.searchText.isEmpty && isSearchBarFocused {
-                        ForEach(searchViewModel.suggestions, id: \.self) { suggestion in
-                            Button {
-                                searchViewModel.searchText = suggestion
-                            } label: {
-                                Text(suggestion)
-                                    .font(DSTypography.searchTitle)
-                                    .foregroundStyle(.black)
-                                    .lineLimit(1)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.leading, 12)
+                        if !searchViewModel.searchText.isEmpty && isSearchBarFocused {
+                            ForEach(searchViewModel.suggestions, id: \.self) { suggestion in
+                                Button {
+                                    searchViewModel.searchText = suggestion
+                                } label: {
+                                    Text(suggestion)
+                                        .font(DSTypography.searchTitle)
+                                        .foregroundStyle(.black)
+                                        .lineLimit(1)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.leading, 12)
+                                }
                             }
                         }
-                    }
-                    if !searchViewModel.searchText.isEmpty {
-                        LazyVGrid(
-                            columns: [
-                                GridItem(.flexible(), spacing: 2),
-                                GridItem(.flexible(), spacing: 2)
-                            ],
-                            spacing: 2
-                        ) {
-                            ForEach(searchViewModel.results) { result in
-                                ProductCardView(
-                                    product: result,
-                                    favoritesService: favoritesService,
-                                    cartService: cartService
-                                )
+                        if !searchViewModel.searchText.isEmpty {
+                            LazyVGrid(
+                                columns: [
+                                    GridItem(.flexible(), spacing: 2),
+                                    GridItem(.flexible(), spacing: 2)
+                                ],
+                                spacing: 2
+                            ) {
+                                ForEach(searchViewModel.results) { result in
+                                    ProductCardView(
+                                        product: result,
+                                        favoritesService: favoritesService,
+                                        cartService: cartService
+                                    )
+                                }
                             }
                         }
                     }
                 }
+                .frame(maxHeight: .infinity)
             }
-            .frame(maxHeight: .infinity)
-
             SearchBar(
                 searchText: $searchViewModel.searchText,
                 isFocused: $isSearchBarFocused,
@@ -116,6 +123,7 @@ struct SearchView: View {
                     container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
                     networkService: NetworkServicesImpl()
                 )
-            )
+            ),
+        isLoading: true
     )
 }
