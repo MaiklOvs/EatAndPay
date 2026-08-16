@@ -10,6 +10,8 @@ import DesignSystem
 
 struct OrderDetailsView: View {
 
+    @Environment(\.dismiss) private var dismiss
+
     var attributedText: AttributedString {
         var result = AttributedString("Анастасия\n")
         result.font = DSTypography.authorReviewTitle
@@ -39,7 +41,7 @@ struct OrderDetailsView: View {
             }
             .padding(.top, 12)
             Spacer()
-            CloseButton(action: { })
+            CloseButton(action: { dismiss() })
                 .padding(.trailing, 12)
                 .padding(.top, 12)
         }
