@@ -233,4 +233,16 @@ final class NetworkServicesImpl: NetworkServices, Sendable {
             throw NetworkError.badRequest
         }
     }
+
+    func getOrders() async throws -> [Components.Schemas.Order] {
+        let response = try await client.get_sol_orders()
+        switch response {
+        case .ok(let okResponse):
+            return try okResponse.body.json
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        }
+    }
 }

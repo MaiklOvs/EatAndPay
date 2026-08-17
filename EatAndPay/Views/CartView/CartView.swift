@@ -83,7 +83,10 @@ struct CartView: View {
                 Button {
                     isAddNewAddressPresented = true
                 } label: {
-                    AddressView(address: addressModel)
+                    AddressView(
+                        address: addressModel,
+                        orderViewModel: nil
+                    )
                 }
                 .buttonStyle(.plain)
                 HStack(spacing: 10) {

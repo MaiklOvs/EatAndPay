@@ -12,7 +12,7 @@ import SwiftData
 struct ProductCardView: View {
 
     let product: ProductPreviewModel
-    
+
     @Bindable var favoritesService: FavoritesService
 
     var cartService: CartService
@@ -88,6 +88,7 @@ struct ProductCardView: View {
             .padding(.bottom, 10)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 12)
     }
 }
 
@@ -103,7 +104,7 @@ struct ProductCardView: View {
                             reviewCount: 1356,
                             isFavorite: false,
                             discount: 100
-                        ),
+                        ),                    
                     favoritesService: FavoritesService(networkServices: NetworkServicesImpl()), cartService: CartService(
                         cartActor: CartActor(
                         container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),

@@ -16,6 +16,7 @@ struct CatalogView: View {
     @State private var catalogModel: CatalogModel
     var cartService: CartService
     @State private var searchViewModel = SearchViewModel(allProducts: [])
+    @State private var orderViewModel = OrderViewModel(networkService: NetworkServicesImpl())
     @State private var addressModel = AddressModel(networkService: NetworkServicesImpl())
     @State private var path = NavigationPath()
     @State private var isCartPresented = false
@@ -54,7 +55,10 @@ struct CatalogView: View {
                 Button {
                     isAddNewAddressPresented = true
                 } label: {
-                    AddressView(address: addressModel)
+                    AddressView(
+                        address: addressModel,
+                        orderViewModel: orderViewModel
+                    )
                 }
                 .padding(.horizontal, 12)
                 .padding(.bottom, 15)

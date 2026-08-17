@@ -11,13 +11,11 @@ import SwiftData
 
 struct ActiveOrderView: View {
 
-    let productPreviewModel: [ProductPreviewModel]
-    let favoriteSetvice: FavoritesService
-    let cartService: CartService
+    let orders: [OrderItemModel]
 
     var attributedText: AttributedString {
         var result = AttributedString("Доставим через 12 минут\n")
-        result.font = DSTypography.authorReviewTitle
+        result.font = DSTypography.descriptionTitle
 
         var subtitle = AttributedString("Новая Басманная ул., 35 ст1, 59")
         subtitle.font = DSTypography.caption
@@ -27,28 +25,27 @@ struct ActiveOrderView: View {
     }
 
     var body: some View {
-        VStack {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(attributedText)
                     .padding(.leading, 12)
+                    .padding(.top, 12)
                 Spacer()
                 Image(.chevronRight)
                     .padding(.trailing, 12)
             }
-            .frame(width: 351, height: 41)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack {
-                    ForEach(productPreviewModel) { product in
-                        ProductCardView(
-                            product: product,
-                            favoritesService: favoriteSetvice,
-                            cartService: cartService
+                LazyHStack(spacing: 8) {
+                    ForEach(orders) { order in
+                        CompactProductCardView(
+                            product: order
                         )
                     }
                 }
             }
             .padding(.leading, 12)
+            .frame(height: 240)
         }
         .background(DSColors.lightGradient)
         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -57,23 +54,15 @@ struct ActiveOrderView: View {
 
 #Preview {
     ActiveOrderView(
-        productPreviewModel: [ProductPreviewModel(
-            id: "",
-            image: "https://eat-and-pay.t02.ru/uploads/eats-jxl/echpochmak.jxl",
-            name: "Огурец в тесте",
-            weight: 80,
-            price: 750,
-            rating: 3.8,
-            reviewCount: 1356,
-            isFavorite: false,
-            discount: 100
-        )],
-        favoriteSetvice: FavoritesService(networkServices: NetworkServicesImpl()),
-        cartService: CartService(
-            cartActor: CartActor(
-            container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
-            networkService: NetworkServicesImpl()
+        orders: [
+            OrderItemModel(
+                id: "",
+                image: "https://eat-and-pay.t02.ru/uploads/eats-jxl/echpochmak.jxl",
+                name: "Огурец в тесте",
+                weight: 100,
+                price: 1000,
+                quantity: 12
             )
-        )
+        ]
     )
 }

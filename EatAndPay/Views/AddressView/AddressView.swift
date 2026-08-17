@@ -11,6 +11,7 @@ import DesignSystem
 struct AddressView: View {
 
     let address: AddressModel?
+    let orderViewModel: OrderViewModel?
     @State private var isOrderDetailsPresent = false
 
     var attributedText: AttributedString {
@@ -54,11 +55,16 @@ struct AddressView: View {
         .background(DSColors.smoky)
         .cornerRadius(12)
         .sheet(isPresented: $isOrderDetailsPresent) {
-            OrderDetailsView()
+            if let orderViewModel {
+                OrderDetailsView(orderViewModel: orderViewModel)
+            }
         }
     }
 }
 
 #Preview {
-    AddressView(address: AddressModel(networkService: NetworkServicesImpl()))
+    AddressView(
+        address: AddressModel(networkService: NetworkServicesImpl()),
+        orderViewModel: OrderViewModel(networkService: NetworkServicesImpl())
+    )
 }

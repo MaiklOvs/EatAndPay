@@ -12,6 +12,8 @@ struct OrderDetailsView: View {
 
     @Environment(\.dismiss) private var dismiss
 
+    let orderViewModel: OrderViewModel
+
     var attributedText: AttributedString {
         var result = AttributedString("Анастасия\n")
         result.font = DSTypography.authorReviewTitle
@@ -24,31 +26,46 @@ struct OrderDetailsView: View {
     }
     
     var body: some View {
-        HStack {
+        VStack {
             HStack {
-                Circle()
-                    .fill(DSColors.lightGradient)
-                    .frame(width: 40, height: 40)
-                    .padding(.leading, 12)
-                    .overlay(
-                        Text("А")
-                            .font(DSTypography.authorReviewTitle)
-                            .padding(.leading, 12)
-                    )
-                Text(attributedText)
-                Image(.chevronRight)
-                    .padding(.top, 16.5)
-            }
-            .padding(.top, 12)
-            Spacer()
-            CloseButton(action: { dismiss() })
-                .padding(.trailing, 12)
+                HStack {
+                    Circle()
+                        .fill(DSColors.lightGradient)
+                        .frame(width: 40, height: 40)
+                        .padding(.leading, 12)
+                        .overlay(
+                            Text("А")
+                                .font(DSTypography.authorReviewTitle)
+                                .padding(.leading, 12)
+                        )
+                    Text(attributedText)
+                    Image(.chevronRight)
+                        .padding(.top, 16.5)
+                }
                 .padding(.top, 12)
+                Spacer()
+                CloseButton(action: { dismiss() })
+                    .padding(.trailing, 12)
+                    .padding(.top, 12)
+            }
+            ForEach(orderViewModel.orders) { order in
+                if order.status == .active {
+                    ActiveOrderView(
+                        orders: order.items
+                    )
+                    .padding(.horizontal, 12)
+                }
+            }
+            Spacer()
         }
-        Spacer()
+        .task {
+            await orderViewModel.loadOrders()
+        }
     }
 }
 
 #Preview {
-    OrderDetailsView()
+    OrderDetailsView(
+        orderViewModel: OrderViewModel(networkService: NetworkServicesImpl())
+    )
 }
