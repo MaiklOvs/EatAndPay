@@ -16,8 +16,11 @@ public enum DSTypography {
 
     // MARK: - Font Family
 
-    /// Имя кастомного шрифта Inter
-    private static let interFamilyName = "Inter"
+    /// PostScript-имена кастомных шрифтов Inter
+    private static let interRegular = "Inter-Regular"
+    private static let interMedium = "Inter-Medium"
+    private static let interSemiBold = "Inter-SemiBold"
+    private static let interBold = "Inter-Bold"
 
     /// Имя кастомного шрифта ALS Hauss VF
     private static let alsHaussFamilyName = "ALSHaussVF-Light"
@@ -25,35 +28,35 @@ public enum DSTypography {
     // MARK: - Headlines
 
     /// Название продукта в карточке товара
-    /// Inter Regular, 14px, line-height 17px
-    public static let cardTitle: Font = .custom(interFamilyName, size: 14).weight(.bold)
+    /// Inter Bold, 14px, line-height 17px
+    public static let cardTitle: Font = .custom(interBold, size: 14)
 
-    public static let cardDetailsTitle: Font = .custom(interFamilyName, size: 26).weight(.bold)
+    public static let cardDetailsTitle: Font = .custom(interBold, size: 26)
 
-    public static let hugeTitle: Font = .custom(interFamilyName, size: 32).weight(.bold)
+    public static let hugeTitle: Font = .custom(interBold, size: 32)
 
-    public static let authorReviewTitle: Font = .custom(interFamilyName, size: 14).weight(.medium)
-    public static let dateReviewTitle: Font = .custom(interFamilyName, size: 14).weight(.medium)
+    public static let authorReviewTitle: Font = .custom(interMedium, size: 14)
+    public static let dateReviewTitle: Font = .custom(interMedium, size: 14)
 
     /// Большая оценка (например, рейтинг товара)
     /// ALS Hauss VF Light, 94px, letter-spacing -4%
     public static let estimationHuge: Font = .custom(alsHaussFamilyName, size: 94)
 
-    public static let descriptionTitle: Font = .custom(interFamilyName, size: 20).weight(.bold)
+    public static let descriptionTitle: Font = .custom(interBold, size: 20)
 
-    public static let searchTitle: Font = .custom(interFamilyName, size: 18).weight(.bold)
+    public static let searchTitle: Font = .custom(interBold, size: 18)
 
     public static let reviewSuccessTitle: Font = .custom(alsHaussFamilyName, size: 56)
     public static let reviewSuccessSubtitle: Font = .custom(alsHaussFamilyName, size: 22)
 
-    public static let addressTitle: Font = .custom(interFamilyName, size: 17).weight(.bold)
-    public static let addressMapTitle: Font = .custom(interFamilyName, size: 24).weight(.bold)
+    public static let addressTitle: Font = .custom(interBold, size: 17)
+    public static let addressMapTitle: Font = .custom(interBold, size: 24)
 
     // MARK: - Body
 
     /// Второстепенный текст (вес)
-    public static let caption: Font = .custom(interFamilyName, size: 14)
+    public static let caption: Font = .custom(interRegular, size: 14)
 
     /// Названия вкладок в tabBae
-    public static let tabBarTitle: Font = .custom(interFamilyName, size: 18)
+    public static let tabBarTitle: Font = .custom(interBold, size: 18)
 }

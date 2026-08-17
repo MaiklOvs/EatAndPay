@@ -56,7 +56,7 @@ struct AddressView: View {
         .cornerRadius(12)
         .sheet(isPresented: $isOrderDetailsPresent) {
             if let orderViewModel {
-                OrderDetailsView(orderViewModel: orderViewModel)
+                OrdersView(orderViewModel: orderViewModel)
             }
         }
     }

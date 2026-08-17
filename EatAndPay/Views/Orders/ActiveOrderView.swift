@@ -12,12 +12,13 @@ import SwiftData
 struct ActiveOrderView: View {
 
     let orders: [OrderItemModel]
+    let addressLine: String
 
     var attributedText: AttributedString {
         var result = AttributedString("Доставим через 12 минут\n")
         result.font = DSTypography.descriptionTitle
 
-        var subtitle = AttributedString("Новая Басманная ул., 35 ст1, 59")
+        var subtitle = AttributedString("\(addressLine)")
         subtitle.font = DSTypography.caption
 
         result.append(subtitle)
@@ -63,6 +64,6 @@ struct ActiveOrderView: View {
                 price: 1000,
                 quantity: 12
             )
-        ]
+        ], addressLine: ""
     )
 }

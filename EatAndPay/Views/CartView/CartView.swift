@@ -20,10 +20,20 @@ struct CartView: View {
 
     @State private var isAddNewAddressPresented = false
     @State private var isSuccessOrderPresented = false
+    @State private var createdOrder: OrderModel?
+
+    private let orderViewModel: OrderViewModel
+
+    init(addressModel: AddressModel, cartService: CartService, orderViewModel: OrderViewModel) {
+        self.addressModel = addressModel
+        self.cartService = cartService
+        self.orderViewModel = orderViewModel
+    }
 
     init(addressModel: AddressModel, cartService: CartService) {
         self.addressModel = addressModel
         self.cartService = cartService
+        self.orderViewModel = OrderViewModel(networkService: NetworkServicesImpl())
     }
 
     func countString(count: Int) -> String {
@@ -110,6 +120,7 @@ struct CartView: View {
                                 addressID: addressModel.selectedAddress?.id ?? ""
                             )
                             if success {
+                                await orderViewModel.loadOrders()
                                 isSuccessOrderPresented = true
                             } else {
                                 snackbarManager.show(title: "Не удалось оформить заказ, попробуйте еще раз")
@@ -126,9 +137,15 @@ struct CartView: View {
             .sheet(isPresented: $isSuccessOrderPresented) {
                 SuccessView(
                     title: "Заказ оформлен",
-                    subtitle: "Товары уже в процессе сборки, скоро привезём!",
-                    action: { dismiss() }
+                    subtitle: "Товары уже в процессе сборки, скоро привезём!",
+                    action: {
+                        isSuccessOrderPresented = false
+                        createdOrder = orderViewModel.orders.first { $0.status == .active }
+                    }
                 )
+            }
+            .sheet(item: $createdOrder) { order in
+                OrderDetailView(orderModel: order)
             }
             .task {
                 await cartService.loadCart()

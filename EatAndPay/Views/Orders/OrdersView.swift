@@ -8,11 +8,12 @@
 import SwiftUI
 import DesignSystem
 
-struct OrderDetailsView: View {
+struct OrdersView: View {
 
     @Environment(\.dismiss) private var dismiss
 
     let orderViewModel: OrderViewModel
+    @State private var selectedOrder: OrderModel?
 
     var attributedText: AttributedString {
         var result = AttributedString("Анастасия\n")
@@ -48,15 +49,26 @@ struct OrderDetailsView: View {
                     .padding(.trailing, 12)
                     .padding(.top, 12)
             }
-            ForEach(orderViewModel.orders) { order in
-                if order.status == .active {
-                    ActiveOrderView(
-                        orders: order.items
-                    )
-                    .padding(.horizontal, 12)
+            ScrollView {
+                ForEach(orderViewModel.orders) { order in
+                    if order.status == .active {
+                        Button {
+                            selectedOrder = order
+                        } label: {
+                            ActiveOrderView(
+                                orders: order.items,
+                                addressLine: order.address.addressLine
+                            )
+                            .padding(.horizontal, 12)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
             Spacer()
+        }
+        .sheet(item: $selectedOrder) { order in
+            OrderDetailView(orderModel: order)
         }
         .task {
             await orderViewModel.loadOrders()
@@ -65,7 +77,7 @@ struct OrderDetailsView: View {
 }
 
 #Preview {
-    OrderDetailsView(
+    OrdersView(
         orderViewModel: OrderViewModel(networkService: NetworkServicesImpl())
     )
 }
