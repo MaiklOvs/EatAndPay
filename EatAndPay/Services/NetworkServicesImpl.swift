@@ -8,7 +8,7 @@ import OpenAPIRuntime
 import OpenAPIURLSession
 import Foundation
 
-final class NetworkServicesImpl: NetworkServices {
+final class NetworkServicesImpl: NetworkServices, Sendable {
 
     let client = Client(
         serverURL: URL(string: "https://eat-and-pay.t02.ru")!,
@@ -231,6 +231,18 @@ final class NetworkServicesImpl: NetworkServices {
             throw NetworkError.notFound
         case .badRequest(_):
             throw NetworkError.badRequest
+        }
+    }
+
+    func getOrders() async throws -> [Components.Schemas.Order] {
+        let response = try await client.get_sol_orders()
+        switch response {
+        case .ok(let okResponse):
+            return try okResponse.body.json
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
         }
     }
 }

@@ -11,11 +11,19 @@
 		9164F5542FF7F3B70042842E /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 9164F5532FF7F3B70042842E /* OpenAPIURLSession */; };
 		9179DEFD301FBA1F008BE1AA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9179DEFC301FBA1F008BE1AA /* LaunchScreen.storyboard */; };
 		918D0F502FEE86B30018F645 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 918D0F4F2FEE86B30018F645 /* OpenAPIRuntime */; };
+		91A1B2C82FEE90010012345B /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 91A1B2C32FEE900100123456 /* Inter-Regular.ttf */; };
+		91A1B2C92FEE90010012345C /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 91A1B2C42FEE900100123457 /* Inter-Bold.ttf */; };
+		91A1B2CA2FEE90010012345D /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 91A1B2C52FEE900100123458 /* Inter-SemiBold.ttf */; };
+		91A1B2CB2FEE90010012345E /* ALS Hauss VF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 91A1B2C62FEE900100123459 /* ALS Hauss VF.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		9179DEFC301FBA1F008BE1AA /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		918D0F3D2FEE84810018F645 /* EatAndPay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EatAndPay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		91A1B2C32FEE900100123456 /* Inter-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Inter-Regular.ttf"; path = "Packages/DesignSystem/Sources/DesignSystem/Resources/Fonts/Inter-Regular.ttf"; sourceTree = SOURCE_ROOT; };
+		91A1B2C42FEE900100123457 /* Inter-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Inter-Bold.ttf"; path = "Packages/DesignSystem/Sources/DesignSystem/Resources/Fonts/Inter-Bold.ttf"; sourceTree = SOURCE_ROOT; };
+		91A1B2C52FEE900100123458 /* Inter-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Inter-SemiBold.ttf"; path = "Packages/DesignSystem/Sources/DesignSystem/Resources/Fonts/Inter-SemiBold.ttf"; sourceTree = SOURCE_ROOT; };
+		91A1B2C62FEE900100123459 /* ALS Hauss VF.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "ALS Hauss VF.ttf"; path = "Packages/DesignSystem/Sources/DesignSystem/Resources/Fonts/ALS Hauss VF.ttf"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -44,6 +52,7 @@
 			isa = PBXGroup;
 			children = (
 				9179DEFC301FBA1F008BE1AA /* LaunchScreen.storyboard */,
+				91A1B2C72FEE90010012345A /* Fonts */,
 				918D0F3F2FEE84810018F645 /* EatAndPay */,
 				918D0F3E2FEE84810018F645 /* Products */,
 			);
@@ -55,6 +64,17 @@
 				918D0F3D2FEE84810018F645 /* EatAndPay.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		91A1B2C72FEE90010012345A /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				91A1B2C32FEE900100123456 /* Inter-Regular.ttf */,
+				91A1B2C42FEE900100123457 /* Inter-Bold.ttf */,
+				91A1B2C52FEE900100123458 /* Inter-SemiBold.ttf */,
+				91A1B2C62FEE900100123459 /* ALS Hauss VF.ttf */,
+			);
+			name = Fonts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -132,6 +152,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				9179DEFD301FBA1F008BE1AA /* LaunchScreen.storyboard in Resources */,
+				91A1B2C82FEE90010012345B /* Inter-Regular.ttf in Resources */,
+				91A1B2C92FEE90010012345C /* Inter-Bold.ttf in Resources */,
+				91A1B2CA2FEE90010012345D /* Inter-SemiBold.ttf in Resources */,
+				91A1B2CB2FEE90010012345E /* ALS Hauss VF.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,7 +310,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Приложению нужен доступ к геолокации для определения вашего адреса";
-				INFOPLIST_KEY_UIAppFonts = "ALS Hauss VF.ttf";
+				INFOPLIST_KEY_UIAppFonts = "Inter-Regular.ttf Inter-Bold.ttf Inter-SemiBold.ttf ALS Hauss VF.ttf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
@@ -320,7 +344,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Приложению нужен доступ к геолокации для определения вашего адреса";
-				INFOPLIST_KEY_UIAppFonts = "ALS Hauss VF.ttf";
+				INFOPLIST_KEY_UIAppFonts = "Inter-Regular.ttf Inter-Bold.ttf Inter-SemiBold.ttf ALS Hauss VF.ttf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = NO;

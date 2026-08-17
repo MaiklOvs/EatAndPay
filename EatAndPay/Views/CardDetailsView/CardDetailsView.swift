@@ -7,42 +7,43 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct CardDetailsView: View {
 
-    @State private var viewModel = ProductCardViewModel(networkService: NetworkServicesImpl())
-    @Bindable var cartViewModel: CartViewModel
+    @Bindable var favoritesService: FavoritesService
+
+    var cartService: CartService
     let productId: String
-    let onFavoriteToggle: () -> Void
-    @State private var isFavorite = false
+
+    @State private var productService = ProductService(networkService: NetworkServicesImpl())
     @State private var isReviewsPresented = false
     @Environment(\.dismiss) private var dismiss
 
     init(
         productId: String,
-        cartViewModel: CartViewModel,
-        onFavoriteToggle: @escaping () -> Void
+        cartService: CartService,
+        favoriteServices: FavoritesService
     ) {
         self.productId = productId
-        self.cartViewModel = cartViewModel
-        self.onFavoriteToggle = onFavoriteToggle
+        self.cartService = cartService
+        self.favoritesService = favoriteServices
     }
 
-    var body: some View {
-        let _ = print("CardDetailsView image: \(viewModel.productCard?.image ?? "nil")")
+    @ViewBuilder
+    private func contentView(product: ProductCardModel) -> some View {
         VStack(alignment: .leading) {
-            AsyncImage(url: URL(string: viewModel.productCard?.image ?? "")) { image in
-                switch image {
-                case .success:
-                    image.image?.resizable()
+            CachedAsyncImage(
+                urlString: product.image,
+                content: { image in
+                    image
+                        .resizable()
                         .aspectRatio(contentMode: .fill)
-                case .failure(let error):
-                    let _ = print("ProductCardView AsyncImage error: \(error)")
-                    DSImagePlaceholder()
-                default:
+                },
+                placeholder: {
                     DSImagePlaceholder()
                 }
-            }
+            )
             .frame(width: 375, height: 440)
             .overlay {
                 CloseButton(action: { dismiss() } )
@@ -54,22 +55,23 @@ struct CardDetailsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
 
             HStack(spacing: 10) {
-                Text("\(viewModel.productCard?.price.formatted() ?? "0") ₽")
+                Text("\(product.price.formatted()) ₽")
                     .font(DSTypography.hugeTitle)
                     .frame(width: 297, height: 39, alignment: .leading)
                 Spacer()
                 Button {
-                    isFavorite.toggle()
-                    onFavoriteToggle()
+                    Task {
+                        await favoritesService.toggleFavorite(for: productId)
+                    }
                 } label: {
-                    Image(isFavorite ? .isFavorite : .heart)
+                    Image(favoritesService.isFavorite(productId: productId) ? .isFavorite : .heart)
                         .frame(width: 44, height: 44)
                 }
             }
             HStack(spacing: 10) {
-                Text(viewModel.productCard?.name ?? "")
+                Text(product.name)
                     .font(DSTypography.cardDetailsTitle)
-                Text("\(viewModel.productCard?.weight.formatted() ?? "") г")
+                Text("\(product.weight.formatted()) г")
                     .font(DSTypography.cardDetailsTitle)
                     .foregroundStyle(DSColors.textSecondary)
             }
@@ -79,9 +81,9 @@ struct CardDetailsView: View {
             } label: {
                 HStack(spacing: 10) {
                     HStack(spacing: 6) {
-                        Text(viewModel.productCard?.rating.formatted() ?? "")
+                        Text(product.rating.formatted())
                             .font(DSTypography.cardDetailsTitle)
-                        ForEach(0..<Int(ceil(viewModel.productCard?.rating ?? 5)), id: \.self) { _ in
+                        ForEach(0..<Int(ceil(product.rating)), id: \.self) { _ in
                             Image(.star)
                                 .renderingMode(.template)
                                 .foregroundStyle(Color.primary)
@@ -91,7 +93,7 @@ struct CardDetailsView: View {
                         Image(.messages)
                             .renderingMode(.template)
                             .foregroundStyle(Color.primary)
-                        Text("\(viewModel.productCard?.reviews?.count.formatted() ?? " 0")  отзывов")
+                        Text("\(product.reviews?.count.formatted() ?? "0")  отзывов")
                             .font(DSTypography.cardDetailsTitle)
                     }
                 }
@@ -100,20 +102,20 @@ struct CardDetailsView: View {
             .buttonStyle(.plain)
             .sheet(isPresented: $isReviewsPresented) {
                 ReviewsView(
-                    viewModel: viewModel
+                    productService: productService
                 )
             }
 
             VStack(alignment: .leading, spacing: 0) {
-                Text(viewModel.productCard?.description ?? "")
+                Text(product.description)
                     .font(DSTypography.descriptionTitle)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Spacer()
             }
             DSButton(
                 action: {
-                    if let product = viewModel.productCard {
-                        cartViewModel.add(
+                    Task {
+                        await cartService.add(
                             product: ProductPreviewModel(
                                 id: product.id,
                                 image: product.image,
@@ -128,13 +130,25 @@ struct CardDetailsView: View {
                         )
                         dismiss()
                     }
-                }
+                },
+                isLoading: cartService.loadingItemIds.contains(productId)
             )
         }
         .padding(.horizontal, 12)
+    }
+
+    var body: some View {
+        ZStack {
+            if let product = productService.productCard {
+                contentView(product: product)
+            } else if productService.isLoadingCartDetail {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                    .scaleEffect(1.5)
+            }
+        }
         .task(id: productId) {
-            await viewModel.loadProductDetails(id: productId)
-            isFavorite = viewModel.productCard?.isFavorite ?? false
+            await productService.loadProductDetails(id: productId)
         }
     }
 }
@@ -142,7 +156,13 @@ struct CardDetailsView: View {
 #Preview {
     CardDetailsView(
         productId: "",
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl()),
-        onFavoriteToggle: {  }
+        cartService:
+            CartService(
+                cartActor: CartActor(
+                    container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                    networkService: NetworkServicesImpl()
+                )
+            ),
+        favoriteServices: FavoritesService(networkServices: NetworkServicesImpl())
     )
 }

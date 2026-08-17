@@ -14,17 +14,20 @@ public struct CartButton: View {
     private let count: Int
     private let onIncrement: () -> Void
     private let onDecrement: () -> Void
+    private let isLoading: Bool
 
     public init(
         price: Int,
         count: Int,
         onDecrement: @escaping () -> Void,
-        onIncrement: @escaping () -> Void
+        onIncrement: @escaping () -> Void,
+        isLoading: Bool = false
     ) {
         self.price = price
         self.onIncrement = onIncrement
         self.onDecrement = onDecrement
         self.count = count
+        self.isLoading = isLoading
     }
 
     public var body: some View {
@@ -39,10 +42,17 @@ public struct CartButton: View {
     private var activeButton: some View {
         HStack(spacing: 6) {
             Button(action: onDecrement) { Image(systemName: "minus") }
-            Text("\(price) ₽")
-                .font(.system(size: 14, weight: .bold))
-                .frame(width: 42, height: 17)
+                .frame(width: 16, height: 17)
+            if isLoading {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+            } else {
+                Text("\(price) ₽")
+                    .font(.system(size: 14, weight: .bold))
+                    .frame(width: 42, height: 17)
+            }
             Button(action: onIncrement) { Image(systemName: "plus") }
+                .frame(width: 16, height: 17)
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 12)
@@ -54,7 +64,12 @@ public struct CartButton: View {
     @ViewBuilder
     private var defaultButton: some View {
         HStack(spacing: 6) {
-            Text("\(price) ₽")
+            if isLoading {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+            } else {
+                Text("\(price) ₽")
+            }
             Button(action: onIncrement) { Image(systemName: "plus") }
         }
         .foregroundStyle(.black)

@@ -11,6 +11,8 @@ import DesignSystem
 struct AddressView: View {
 
     let address: AddressModel?
+    let orderViewModel: OrderViewModel?
+    @State private var isOrderDetailsPresent = false
 
     var attributedText: AttributedString {
         var result = AttributedString("\(address?.selectedAddress?.addressLine ?? "Выберите адрес")\n")
@@ -31,13 +33,18 @@ struct AddressView: View {
                     Image(.chevronRight)
                 }
                 Spacer()
-                Circle()
-                    .fill(DSColors.lightGradient)
-                    .frame(width: 40, height: 40)
-                    .overlay(
-                        Text("А")
-                            .font(DSTypography.authorReviewTitle)
-                    )
+                Button {
+                    isOrderDetailsPresent = true
+                } label: {
+                    Circle()
+                        .fill(DSColors.lightGradient)
+                        .frame(width: 40, height: 40)
+                        .overlay(
+                            Text("А")
+                                .font(DSTypography.authorReviewTitle)
+                        )
+                }
+                .buttonStyle(.plain)
             }
             .frame(maxHeight: .infinity, alignment: .center)
         }
@@ -47,9 +54,17 @@ struct AddressView: View {
         .frame(height: 60)
         .background(DSColors.smoky)
         .cornerRadius(12)
+        .sheet(isPresented: $isOrderDetailsPresent) {
+            if let orderViewModel {
+                OrdersView(orderViewModel: orderViewModel)
+            }
+        }
     }
 }
 
 #Preview {
-    AddressView(address: AddressModel(networkService: NetworkServicesImpl()))
+    AddressView(
+        address: AddressModel(networkService: NetworkServicesImpl()),
+        orderViewModel: OrderViewModel(networkService: NetworkServicesImpl())
+    )
 }
