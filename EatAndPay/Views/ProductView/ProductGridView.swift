@@ -47,8 +47,10 @@ struct ProductGridView: View {
                     .onTapGesture {
                         selectedProduct = data
                     }
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
             }
+            .animation(.easeOut(duration: 0.2), value: productPreviewModel)
         }
         .sheet(item: $selectedProduct) { product in
             CardDetailsView(

@@ -191,6 +191,7 @@ struct ReviewsView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 24)
+                .animation(.easeInOut(duration: 0.25), value: selectedSort)
             }
         }
         .sheet(isPresented: $isReviewsPresented) {

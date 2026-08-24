@@ -31,11 +31,14 @@ public struct CartButton: View {
     }
 
     public var body: some View {
-        if count > 0 {
-            activeButton
-        } else {
-            defaultButton
+        Group {
+            if count > 0 {
+                activeButton
+            } else {
+                defaultButton
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: count)
     }
 
     @ViewBuilder
@@ -50,6 +53,7 @@ public struct CartButton: View {
                 Text("\(price) ₽")
                     .font(.system(size: 14, weight: .bold))
                     .frame(width: 42, height: 17)
+                    .contentTransition(.numericText())
             }
             Button(action: onIncrement) { Image(systemName: "plus") }
                 .frame(width: 16, height: 17)

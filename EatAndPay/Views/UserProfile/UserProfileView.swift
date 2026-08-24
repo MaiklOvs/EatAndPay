@@ -99,6 +99,7 @@ struct UserProfileView: View {
                 isLoading: user.isLoading,
                 disabled: !hasChanges
             )
+            .animation(.easeInOut(duration: 0.2), value: hasChanges)
             Spacer()
         }
         .onAppear {
