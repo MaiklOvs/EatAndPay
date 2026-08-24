@@ -28,7 +28,6 @@ struct ReviewsView: View {
 
         if let date = isoFormatter.date(from: dateString) {
             let result = dateFormatter.string(from: date)
-            print("✅ ISO success: \(result)") // 👈 Добавьте
             return result
         }
 
@@ -45,10 +44,8 @@ struct ReviewsView: View {
 
         if let date = fallbackFormatter.date(from: dateString) {
             let result = dateFormatter.string(from: date)
-            print("✅ Fallback success: \(result)") // 👈 Добавьте
             return result
         }
-        print("❌ Failed: returning original \(dateString)")
         return dateString
     }
 
