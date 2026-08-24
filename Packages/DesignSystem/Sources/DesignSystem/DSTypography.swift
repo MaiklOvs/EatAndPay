@@ -34,6 +34,7 @@ public enum DSTypography {
     public static let cardDetailsTitle: Font = .custom(interBold, size: 26)
 
     public static let hugeTitle: Font = .custom(interBold, size: 32)
+    public static let userName: Font = .custom(interBold, size: 38)
 
     public static let authorReviewTitle: Font = .custom(interMedium, size: 14)
     public static let dateReviewTitle: Font = .custom(interMedium, size: 14)

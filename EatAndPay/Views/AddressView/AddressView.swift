@@ -12,6 +12,9 @@ struct AddressView: View {
 
     let address: AddressModel?
     let orderViewModel: OrderViewModel?
+    let userProfile: UserProfileViewModel?
+    let isCart: Bool
+
     @State private var isOrderDetailsPresent = false
 
     var attributedText: AttributedString {
@@ -33,18 +36,20 @@ struct AddressView: View {
                     Image(.chevronRight)
                 }
                 Spacer()
-                Button {
-                    isOrderDetailsPresent = true
-                } label: {
-                    Circle()
-                        .fill(DSColors.lightGradient)
-                        .frame(width: 40, height: 40)
-                        .overlay(
-                            Text("А")
-                                .font(DSTypography.authorReviewTitle)
-                        )
+                if !isCart {
+                    Button {
+                        isOrderDetailsPresent = true
+                    } label: {
+                        Circle()
+                            .fill(DSColors.lightGradient)
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                Text(userProfile?.userProfile?.name.prefix(1) ?? "A")
+                                    .font(DSTypography.authorReviewTitle)
+                            )
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
             .frame(maxHeight: .infinity, alignment: .center)
         }
@@ -56,7 +61,10 @@ struct AddressView: View {
         .cornerRadius(12)
         .sheet(isPresented: $isOrderDetailsPresent) {
             if let orderViewModel {
-                OrdersView(orderViewModel: orderViewModel)
+                OrdersView(
+                    orderViewModel: orderViewModel,
+                    user: userProfile
+                )
             }
         }
     }
@@ -65,6 +73,8 @@ struct AddressView: View {
 #Preview {
     AddressView(
         address: AddressModel(networkService: NetworkServicesImpl()),
-        orderViewModel: OrderViewModel(networkService: NetworkServicesImpl())
+        orderViewModel: OrderViewModel(networkService: NetworkServicesImpl()),
+        userProfile: UserProfileViewModel(networkService: NetworkServicesImpl()),
+        isCart: false
     )
 }

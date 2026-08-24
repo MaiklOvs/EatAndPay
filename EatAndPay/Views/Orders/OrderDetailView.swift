@@ -14,10 +14,18 @@ struct OrderDetailView: View {
 
     var orderModel: OrderModel
 
+    func title(status: OrderStatus) -> String {
+        if status == .completed {
+            "Доставили\nза"
+        } else {
+            "Доставим\nчерез"
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading) {
             HStack(alignment: .top) {
-                Text("Доставим\nчерез 12 минут")
+                Text("\(title(status: orderModel.status)) 12 минут")
                     .font(DSTypography.hugeTitle)
                 Spacer()
                 CloseButton(action: { dismiss() })

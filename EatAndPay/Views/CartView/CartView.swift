@@ -95,7 +95,9 @@ struct CartView: View {
                 } label: {
                     AddressView(
                         address: addressModel,
-                        orderViewModel: nil
+                        orderViewModel: nil,
+                        userProfile: nil,
+                        isCart: true
                     )
                 }
                 .buttonStyle(.plain)

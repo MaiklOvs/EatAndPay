@@ -13,13 +13,16 @@ struct OrdersView: View {
     @Environment(\.dismiss) private var dismiss
 
     let orderViewModel: OrderViewModel
+    let user: UserProfileViewModel?
+
     @State private var selectedOrder: OrderModel?
+    @State private var isUserProfilePresented = false
 
     var attributedText: AttributedString {
-        var result = AttributedString("Анастасия\n")
+        var result = AttributedString("\(user?.userProfile?.name ?? "")\n")
         result.font = DSTypography.authorReviewTitle
 
-        var subtitle = AttributedString("+7 908 305-80-34")
+        var subtitle = AttributedString("\(user?.userProfile?.phone.asPhoneNumber ?? "")")
         subtitle.font = DSTypography.caption
 
         result.append(subtitle)
@@ -66,18 +69,23 @@ struct OrdersView: View {
         VStack {
             HStack {
                 HStack {
-                    Circle()
-                        .fill(DSColors.lightGradient)
-                        .frame(width: 40, height: 40)
-                        .padding(.leading, 12)
-                        .overlay(
-                            Text("А")
-                                .font(DSTypography.authorReviewTitle)
-                                .padding(.leading, 12)
-                        )
-                    Text(attributedText)
-                    Image(.chevronRight)
-                        .padding(.top, 16.5)
+                    Button {
+                        isUserProfilePresented = true
+                    } label: {
+                        Circle()
+                            .fill(DSColors.lightGradient)
+                            .frame(width: 40, height: 40)
+                            .padding(.leading, 12)
+                            .overlay(
+                                Text(user?.userProfile?.name.prefix(1) ?? "A")
+                                    .font(DSTypography.authorReviewTitle)
+                                    .padding(.leading, 12)
+                            )
+                        Text(attributedText)
+                        Image(.chevronRight)
+                            .padding(.top, 16.5)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.top, 12)
                 Spacer()
@@ -112,6 +120,11 @@ struct OrdersView: View {
         .sheet(item: $selectedOrder) { order in
             OrderDetailView(orderModel: order)
         }
+        .sheet(isPresented: $isUserProfilePresented) {
+            if let userProfile = user {
+                UserProfileView(user: userProfile)
+            }
+        }
         .task {
             await orderViewModel.loadOrders()
         }
@@ -120,6 +133,7 @@ struct OrdersView: View {
 
 #Preview {
     OrdersView(
-        orderViewModel: OrderViewModel(networkService: NetworkServicesImpl())
+        orderViewModel: OrderViewModel(networkService: NetworkServicesImpl()),
+        user: UserProfileViewModel(networkService: NetworkServicesImpl())
     )
 }

@@ -18,6 +18,8 @@ struct CatalogView: View {
     @State private var searchViewModel = SearchViewModel(allProducts: [])
     @State private var orderViewModel = OrderViewModel(networkService: NetworkServicesImpl())
     @State private var addressModel = AddressModel(networkService: NetworkServicesImpl())
+    @State private var userProfileViewModel = UserProfileViewModel(networkService: NetworkServicesImpl())
+
     @State private var path = NavigationPath()
     @State private var isCartPresented = false
     @State private var isSearchPresented = false
@@ -57,7 +59,9 @@ struct CatalogView: View {
                 } label: {
                     AddressView(
                         address: addressModel,
-                        orderViewModel: orderViewModel
+                        orderViewModel: orderViewModel,
+                        userProfile: userProfileViewModel,
+                        isCart: false
                     )
                 }
                 .padding(.horizontal, 12)
@@ -183,6 +187,7 @@ struct CatalogView: View {
                 }
                 await cartService.loadCart()
                 await addressModel.loadAddress()
+                await userProfileViewModel.loadUserProfile()
                 searchViewModel.allProducts = catalogModel.catalogService.products.data
             }
         }

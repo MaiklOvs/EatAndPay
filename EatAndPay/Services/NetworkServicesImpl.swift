@@ -245,4 +245,54 @@ final class NetworkServicesImpl: NetworkServices, Sendable {
             throw NetworkError.unexpectedStatus(statusCode)
         }
     }
+
+    func getUserProfile() async throws -> Components.Schemas.UserProfile {
+        let response = try await client.get_sol_users_sol_me()
+        switch response {
+        case .ok(let okResponse):
+            return try okResponse.body.json
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        }
+    }
+
+    func upadateUserProfile(input: Operations.put_sol_users_sol_me.Input) async throws -> Operations.put_sol_users_sol_me.Output.Ok {
+        let response = try await client.put_sol_users_sol_me(input)
+        switch response {
+        case .ok(let okResponse):
+            return okResponse
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        case .badRequest(_):
+            throw NetworkError.badRequest
+        }
+    }
+
+    func logout() async throws -> Operations.post_sol_logout.Output.Ok {
+        let response = try await client.post_sol_logout()
+        switch response {
+        case .ok(let okResponse):
+            return okResponse
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        }
+    }
+
+    func deleteUserProfile() async throws -> Operations.delete_sol_users_sol_me.Output.Ok {
+        let response = try await client.delete_sol_users_sol_me()
+        switch response {
+        case .ok(let okResponse):
+            return okResponse
+        case .unauthorized:
+            throw NetworkError.unauthorized
+        case .default(statusCode: let statusCode, _):
+            throw NetworkError.unexpectedStatus(statusCode)
+        }
+    }
 }
