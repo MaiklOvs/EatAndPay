@@ -19,6 +19,7 @@ struct EatAndPayApp: App {
     private let catalogService: CatalogService
     private let catalogModel: CatalogModel
     private let cartService: CartService
+    private let container: ModelContainer
 
     init() {
         let networkService = NetworkServicesImpl()
@@ -29,9 +30,14 @@ struct EatAndPayApp: App {
             favoritesService: favoritesService
         )
         self.catalogModel = CatalogModel(catalogService: catalogService)
+        do {
+            container = try ModelContainer(for: PersistedCart.self, PersistedCartItem.self)
+        } catch {
+            fatalError("Failed to create SwiftData ModelContainer for PersistedCart models: \(error)")
+        }
         self.cartService = CartService(
             cartActor: CartActor(
-                container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                container: container,
                 networkService: networkService
             )
         )
@@ -51,7 +57,7 @@ struct EatAndPayApp: App {
                     catalogModel: catalogModel,
                     cartService: cartService
                 )
-                    .modelContainer(for: [PersistedCart.self, PersistedCartItem.self])
+                    .modelContainer(container)
                     .environmentObject(snackbarManager)
             }
         }
