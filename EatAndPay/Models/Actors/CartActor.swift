@@ -6,8 +6,12 @@
 //
 
 import SwiftData
+import os.log
+import Foundation
 
 actor CartActor {
+
+    private let logger = Logger(subsystem: "com.eatandpay.cart", category: "CartActor")
 
     private let container: ModelContainer
 
@@ -35,14 +39,17 @@ actor CartActor {
 
     // MARK: - Add items in cart
 
-    func addItemInCart(id: String) async {
+    func addItemInCart(id: String) async throws {
         do {
             let cartItem = try await networkService.addItemInCart(query: id)
             cart?.totalItems = cartItem.total
         } catch {
-            print("Failed to add item in cart: \(error)")
+            logger.error("Failed to add item in cart: \(error.localizedDescription, privacy: .public)")
+            throw error
         }
     }
+
+    // MARK: - Public Methods
 
     func add(product: ProductPreviewModel) async -> Cart? {
         let productId = product.id
@@ -51,59 +58,58 @@ actor CartActor {
         let productName = product.name
         let productWeight = Int(product.weight)
 
-        var cart = cart ?? Cart(
-            deliveryTime: 0,
-            orderPrice: 0,
-            deliveryPrice: 0,
-            totalPrice: 0,
-            totalItems: 0,
-            items: []
+        let cartItem = CartItem(
+            id: productId,
+            image: productImage,
+            name: productName,
+            weight: productWeight,
+            price: productPrice,
+            quantity: 1,
+            available: true
         )
 
-        if let index = cart.items.firstIndex(where: { $0.id == productId }) {
-            cart.items[index].quantity += 1
-        } else {
-            cart.items.append(
-                CartItem(
-                    id: productId,
-                    image: productImage,
-                    name: productName,
-                    weight: productWeight,
-                    price: productPrice,
-                    quantity: 1,
-                    available: true
-                )
-            )
-        }
-
-        cart.totalItems += 1
-        cart.orderPrice += productPrice
-        cart.totalPrice += productPrice
-        self.cart = cart
-
-        do {
-            try saveCartToLocal()
-        } catch {
-            print("Failed to save local cart: \(error)")
-        }
-
-        await self.addItemInCart(id: productId)
-
-        return cart
+        return await addItemToCart(
+            productId: productId,
+            price: productPrice,
+            cartItem: cartItem,
+            shouldCreateNewItem: true
+        )
     }
 
     func add(productId: String, price: Int) async -> Cart? {
-        var cart = cart ?? Cart(
-            deliveryTime: 0,
-            orderPrice: 0,
-            deliveryPrice: 0,
-            totalPrice: 0,
-            totalItems: 0,
-            items: []
+        return await addItemToCart(
+            productId: productId,
+            price: price,
+            cartItem: nil,
+            shouldCreateNewItem: false
         )
+    }
+
+    // MARK: - Private Methods
+
+    private func addItemToCart(
+        productId: String,
+        price: Int,
+        cartItem: CartItem?,
+        shouldCreateNewItem: Bool
+    ) async -> Cart? {
+        if cart == nil {
+            cart = Cart(
+                deliveryTime: 0,
+                orderPrice: 0,
+                deliveryPrice: 0,
+                totalPrice: 0,
+                totalItems: 0,
+                items: []
+            )
+        }
+
+        guard var cart = self.cart else { return nil }
 
         if let index = cart.items.firstIndex(where: { $0.id == productId }) {
             cart.items[index].quantity += 1
+        } else if shouldCreateNewItem, let newItem = cartItem {
+            cart.items.append(newItem)
         }
 
         cart.totalItems += 1
@@ -111,63 +117,67 @@ actor CartActor {
         cart.totalPrice += price
         self.cart = cart
 
+        saveCartToLocalIfNeeded()
+
+        do {
+            try await self.addItemInCart(id: productId)
+        } catch {
+            logger.error("Failed to sync added item with server: \(error.localizedDescription, privacy: .public)")
+        }
+
+        return cart
+    }
+
+    private func saveCartToLocalIfNeeded() {
         do {
             try saveCartToLocal()
         } catch {
-            print("Failed to save local cart: \(error)")
+            logger.error("Failed to save local cart: \(error.localizedDescription, privacy: .public)")
         }
-
-        await self.addItemInCart(id: productId)
-
-        return cart
     }
 
     // MARK: - Remove item in cart
 
-    func removeItemInCart(id: String) async {
+    func removeItemInCart(id: String) async throws {
         do {
             let cartItem = try await networkService.removeItemInCart(query: id)
             cart?.totalItems = cartItem.total ?? 0
         } catch {
-            print("Failed to remove item in cart: \(error)")
+            logger.error("Failed to remove item in cart: \(error.localizedDescription, privacy: .public)")
+            throw error
         }
     }
 
+    // MARK: - Public Methods
+
     func remove(product: ProductPreviewModel) async -> Cart? {
-        let productId = product.id
-        let productPrice = product.price
-
-        guard let index = cart?.items.firstIndex(where: { $0.id == productId }),
-              cart?.items[index].quantity ?? 0 > 0 else { return cart }
-
-        guard var cart else { return cart }
-
-        cart.items[index].quantity -= 1
-
-        if cart.items[index].quantity == 0 {
-            cart.items.remove(at: index)
-        }
-
-        cart.totalItems -= 1
-        cart.orderPrice -= productPrice
-        cart.totalPrice -= productPrice
-        self.cart = cart
-
-        do {
-            try saveCartToLocal()
-        } catch {
-            print("Failed to save local cart: \(error)")
-        }
-
-        await self.removeItemInCart(id: productId)
-        return cart
+        return await removeItemFromCart(
+            productId: product.id,
+            price: product.price
+        )
     }
 
     func remove(productId: String, price: Int) async -> Cart? {
-        guard let index = cart?.items.firstIndex(where: { $0.id == productId }),
-              cart?.items[index].quantity ?? 0 > 0 else { return cart }
+        return await removeItemFromCart(
+            productId: productId,
+            price: price
+        )
+    }
 
-        guard var cart else { return cart }
+    // MARK: - Private Methods
+
+    private func removeItemFromCart(
+        productId: String,
+        price: Int
+    ) async -> Cart? {
+        guard let index = cart?.items.firstIndex(where: { $0.id == productId }),
+              let cartItems = cart?.items,
+              index < cartItems.count,
+              cartItems[index].quantity > 0 else {
+            return cart
+        }
+
+        guard var cart = cart else { return cart }
 
         cart.items[index].quantity -= 1
 
@@ -179,13 +189,15 @@ actor CartActor {
         cart.orderPrice -= price
         cart.totalPrice -= price
         self.cart = cart
+
+        saveCartToLocalIfNeeded()
+
         do {
-            try saveCartToLocal()
+            try await self.removeItemInCart(id: productId)
         } catch {
-            print("Failed to save local cart: \(error)")
+            logger.error("Failed to sync removed item with server: \(error.localizedDescription, privacy: .public)")
         }
 
-        await self.removeItemInCart(id: productId)
         return cart
     }
 
@@ -197,7 +209,7 @@ actor CartActor {
                 cart = localCart
             }
         } catch {
-            print("Failed to load local cart: \(error)")
+            logger.error("Failed to load local cart: \(error.localizedDescription, privacy: .public)")
         }
         do {
             let cartList = try await networkService.fetchCart()
@@ -221,7 +233,7 @@ actor CartActor {
             )
             try saveCartToLocal()
         } catch {
-            print("Failed to load cart: \(error)")
+            logger.error("Failed to load cart: \(error.localizedDescription, privacy: .public)")
         }
 
         return cart
@@ -243,6 +255,7 @@ actor CartActor {
             cart = nil
             return true
         } catch {
+            logger.error("Failed to make order: \(error.localizedDescription, privacy: .public)")
             return false
         }
     }

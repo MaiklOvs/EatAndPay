@@ -6,15 +6,19 @@
 //
 
 import Foundation
+import os.log
 
 @MainActor
 @Observable
 final class CartService {
 
     private let cartActor: CartActor
+    private let logger = Logger(subsystem: "com.eatandpay.cart", category: "CartService")
+
     var cart: Cart?
     var isMakingOrder = false
     var loadingItemIds: Set<String> = []
+    var lastError: Error?
 
     init(cartActor: CartActor, cart: Cart? = nil) {
         self.cartActor = cartActor
@@ -38,29 +42,50 @@ final class CartService {
     func add(product: ProductPreviewModel) async {
         loadingItemIds.insert(product.id)
         defer { loadingItemIds.remove(product.id) }
-        cart = await cartActor.add(product: product)
+        do {
+            cart = try await cartActor.add(product: product)
+        } catch {
+            logError(error, context: "add product \(product.id)")
+        }
     }
 
     func remove(product: ProductPreviewModel) async {
         loadingItemIds.insert(product.id)
         defer { loadingItemIds.remove(product.id) }
-        cart = await cartActor.remove(product: product)
+        do {
+            cart = try await cartActor.remove(product: product)
+        } catch {
+            logError(error, context: "remove product \(product.id)")
+        }
     }
 
     func add(productId: String, price: Int) async {
         loadingItemIds.insert(productId)
         defer { loadingItemIds.remove(productId) }
-        cart = await cartActor.add(productId: productId, price: price)
+        do {
+            cart = try await cartActor.add(productId: productId, price: price)
+        } catch {
+            logError(error, context: "add product \(productId)")
+        }
     }
 
     func remove(productId: String, price: Int) async {
         loadingItemIds.insert(productId)
         defer { loadingItemIds.remove(productId) }
-        cart = await cartActor.remove(productId: productId, price: price)
+        do {
+            cart = try await cartActor.remove(productId: productId, price: price)
+        } catch {
+            logError(error, context: "remove product \(productId)")
+        }
     }
 
     func loadCart() async {
         cart = await cartActor.loadCart()
+    }
+
+    private func logError(_ error: Error, context: String) {
+        lastError = error
+        logger.error("Failed to \(context, privacy: .public): \(error.localizedDescription, privacy: .public)")
     }
 
     func makeOrder(paymentMethod: String, addressID: String) async -> Bool {
