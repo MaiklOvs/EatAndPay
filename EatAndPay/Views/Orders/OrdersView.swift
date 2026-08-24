@@ -25,7 +25,43 @@ struct OrdersView: View {
         result.append(subtitle)
         return result
     }
-    
+
+    private var activeOrders: [OrderModel] {
+        orderViewModel.orders.filter { $0.status == .active }
+    }
+
+    private var completedOrders: [OrderModel] {
+        orderViewModel.orders.filter { $0.status == .completed }
+    }
+
+    private func orderButton(for order: OrderModel) -> some View {
+        Button {
+            selectedOrder = order
+        } label: {
+            ActiveOrderView(
+                orders: order.items,
+                addressLine: order.address.addressLine
+            )
+            .padding(.horizontal, 12)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func completedOrderButton(for order: OrderModel) -> some View {
+        Button {
+            selectedOrder = order
+        } label: {
+            CompletedOrderView(
+                orders: order.items,
+                totalPrice: order.totalPrice,
+                totalItems: order.totalItems,
+                deliveryDate: order.deliveryDate ?? ""
+            )
+            .padding(.horizontal, 12)
+        }
+        .buttonStyle(.plain)
+    }
+
     var body: some View {
         VStack {
             HStack {
@@ -50,18 +86,24 @@ struct OrdersView: View {
                     .padding(.top, 12)
             }
             ScrollView {
-                ForEach(orderViewModel.orders) { order in
-                    if order.status == .active {
-                        Button {
-                            selectedOrder = order
-                        } label: {
-                            ActiveOrderView(
-                                orders: order.items,
-                                addressLine: order.address.addressLine
-                            )
-                            .padding(.horizontal, 12)
+                LazyVStack(spacing: 12, pinnedViews: []) {
+                    Section {
+                        ForEach(activeOrders) { order in
+                            orderButton(for: order)
                         }
-                        .buttonStyle(.plain)
+                    }
+                    Section {
+                        if !completedOrders.isEmpty {
+                            Text("История заказов")
+                                .font(DSTypography.descriptionTitle)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 12)
+                                .padding(.top, 12)
+                        }
+
+                        ForEach(completedOrders) { order in
+                            completedOrderButton(for: order)
+                        }
                     }
                 }
             }
