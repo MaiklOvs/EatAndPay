@@ -44,25 +44,50 @@ public struct CartButton: View {
     @ViewBuilder
     private var activeButton: some View {
         HStack(spacing: 6) {
-            Button(action: onDecrement) { Image(systemName: "minus") }
-                .frame(width: 16, height: 17)
+            Button(action: onDecrement) {
+                Image(systemName: "minus")
+                    .font(.system(size: 16, weight: .bold))
+                    .frame(width: 16, height: 17)
+            }
+            .frame(width: 16, height: 17)
+
             if isLoading {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                    .frame(width: 42, height: 17)
             } else {
                 Text("\(price) ₽")
                     .font(.system(size: 14, weight: .bold))
                     .frame(width: 42, height: 17)
                     .contentTransition(.numericText())
             }
-            Button(action: onIncrement) { Image(systemName: "plus") }
-                .frame(width: 16, height: 17)
+
+            Button(action: onIncrement) {
+                Image(systemName: "plus")
+                    .font(.system(size: 16, weight: .bold))
+                    .frame(width: 16, height: 17)
+            }
+            .frame(width: 16, height: 17)
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
         .background(DSColors.accentGradient)
-        .clipShape(Capsule())
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .frame(width: 106, height: 32)
+        .overlay {
+            HStack {
+                Color.clear
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+                    .onTapGesture(perform: onDecrement)
+                Spacer()
+                Color.clear
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+                    .onTapGesture(perform: onIncrement)
+            }
+        }
     }
 
     @ViewBuilder
@@ -72,22 +97,25 @@ public struct CartButton: View {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: .black))
             } else {
-                Text("\(price) ₽")
+                Button(action: onIncrement) {
+                    Text("\(price) ₽")
+                    Image(systemName: "plus")
+                }
             }
-            Button(action: onIncrement) { Image(systemName: "plus") }
         }
         .foregroundStyle(.black)
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
         .background(DSColors.accentPinky)
-        .clipShape(Capsule())
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .frame(width: 106, height: 32, alignment: .leading)
     }
 }
 
 #Preview {
     CartButton(
         price: 750,
-        count: 1,
+        count: 0,
         onDecrement: {},
         onIncrement: {}
     )

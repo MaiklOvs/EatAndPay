@@ -85,6 +85,7 @@ struct ProductCardView: View {
                 },
                 isLoading: cartService.loadingItemIds.contains(product.id)
             )
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 10)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
