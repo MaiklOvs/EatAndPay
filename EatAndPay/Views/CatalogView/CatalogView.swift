@@ -41,6 +41,9 @@ struct CatalogView: View {
             }
             .padding(.bottom, 12)
             .frame(height: 50)
+        } else {
+            Color.clear
+                .frame(height: 50)
         }
     }
 
@@ -143,14 +146,12 @@ struct CatalogView: View {
                 searchViewModel.allProducts = newValue
             }
             .overlay(alignment: .bottom) {
-                HStack {
+                HStack(alignment: .bottom) {
                     searchButtonView(isPresented: $isSearchPresented)
                         .frame(height: 50)
                         .transition(.opacity.combined(with: .scale(scale: 0.92)))
                     Spacer()
                     checkoutButtonView(isPresented: $isCartPresented)
-                        .frame(height: 50)
-                        .transition(.opacity.combined(with: .scale(scale: 0.92)))
                 }
                 .padding(.horizontal, 12)
                 .padding(.bottom, 12)

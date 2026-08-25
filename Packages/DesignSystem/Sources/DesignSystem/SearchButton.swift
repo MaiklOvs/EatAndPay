@@ -30,9 +30,9 @@ public struct SearchButton: View {
                     .foregroundStyle(.black)
             }
             .background(DSColors.searchButton)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
-                RoundedRectangle(cornerRadius: 20)
+                RoundedRectangle(cornerRadius: 12)
                     .stroke(
                         Color(red: 151/255, green: 151/255, blue: 175/255, opacity: 0.3),
                         lineWidth: 1
