@@ -30,6 +30,24 @@ struct CardDetailsView: View {
         self.favoritesService = favoriteServices
     }
 
+    private func reviewCountString(for count: Int) -> String {
+        let lastDigit = count % 10
+        let lastTwoDigits = count % 100
+
+        if lastTwoDigits >= 11 && lastTwoDigits <= 19 {
+            return "\(count) отзывов"
+        }
+
+        switch lastDigit {
+        case 1:
+            return "\(count) отзыв"
+        case 2, 3, 4:
+            return "\(count) отзыва"
+        default:
+            return "\(count) отзывов"
+        }
+    }
+
     @ViewBuilder
     private func contentView(product: ProductCardModel) -> some View {
         VStack(alignment: .leading) {
@@ -75,14 +93,14 @@ struct CardDetailsView: View {
                     .font(DSTypography.cardDetailsTitle)
                     .foregroundStyle(DSColors.textSecondary)
             }
-            .frame(width: 294, height: 30, alignment: .leading)
+            .frame(height: 30)
             Button {
                 isReviewsPresented = true
             } label: {
                 HStack(spacing: 10) {
                     HStack(spacing: 6) {
-                        Text(product.rating.formatted())
-                            .font(DSTypography.cardDetailsTitle)
+                        Text(product.rating.ratingString)
+                            .font(DSTypography.bodyLarge)
                         ForEach(0..<Int(ceil(product.rating)), id: \.self) { _ in
                             Image(.star)
                                 .renderingMode(.template)
@@ -93,8 +111,8 @@ struct CardDetailsView: View {
                         Image(.messages)
                             .renderingMode(.template)
                             .foregroundStyle(Color.primary)
-                        Text("\(product.reviews?.count.formatted() ?? "0")  отзывов")
-                            .font(DSTypography.cardDetailsTitle)
+                        Text(reviewCountString(for: product.reviews?.count ?? 0))
+                            .font(DSTypography.bodyLarge)
                     }
                 }
                 .frame(width: 351, height: 30, alignment: .leading)

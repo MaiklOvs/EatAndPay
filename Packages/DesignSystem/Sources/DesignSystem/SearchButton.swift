@@ -19,7 +19,7 @@ public struct SearchButton: View {
 
     public var body: some View {
         Button(action: action) {
-            HStack {
+            HStack(spacing: 0) {
                 Image(.search)
                     .frame(width: 50, height: 50)
                 Text("Поиск")
@@ -30,6 +30,7 @@ public struct SearchButton: View {
                     .foregroundStyle(.black)
             }
             .background(DSColors.searchButton)
+            .frame(width: 129, height: 50)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)

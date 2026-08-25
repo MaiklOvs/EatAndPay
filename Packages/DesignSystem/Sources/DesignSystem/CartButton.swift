@@ -14,20 +14,17 @@ public struct CartButton: View {
     private let count: Int
     private let onIncrement: () -> Void
     private let onDecrement: () -> Void
-    private let isLoading: Bool
 
     public init(
         price: Int,
         count: Int,
         onDecrement: @escaping () -> Void,
         onIncrement: @escaping () -> Void,
-        isLoading: Bool = false
     ) {
         self.price = price
         self.onIncrement = onIncrement
         self.onDecrement = onDecrement
         self.count = count
-        self.isLoading = isLoading
     }
 
     public var body: some View {
@@ -50,18 +47,10 @@ public struct CartButton: View {
                     .frame(width: 16, height: 17)
             }
             .frame(width: 16, height: 17)
-
-            if isLoading {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
-                    .frame(width: 42, height: 17)
-            } else {
-                Text("\(price) ₽")
-                    .font(.system(size: 14, weight: .bold))
-                    .frame(width: 42, height: 17)
-                    .contentTransition(.numericText())
-            }
-
+            Text("\(price) ₽")
+                .font(.system(size: 14, weight: .bold))
+                .frame(minWidth: 34, maxHeight: 17)
+                .contentTransition(.numericText())
             Button(action: onIncrement) {
                 Image(systemName: "plus")
                     .font(.system(size: 16, weight: .bold))
@@ -72,9 +61,9 @@ public struct CartButton: View {
         .foregroundStyle(.white)
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
+        .frame(height: 32)
         .background(DSColors.accentGradient)
         .clipShape(RoundedRectangle(cornerRadius: 6))
-        .frame(width: 106, height: 32)
         .overlay {
             HStack {
                 Color.clear
@@ -93,14 +82,9 @@ public struct CartButton: View {
     @ViewBuilder
     private var defaultButton: some View {
         HStack(spacing: 6) {
-            if isLoading {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
-            } else {
-                Button(action: onIncrement) {
-                    Text("\(price) ₽")
-                    Image(systemName: "plus")
-                }
+            Button(action: onIncrement) {
+                Text("\(price) ₽")
+                Image(systemName: "plus")
             }
         }
         .foregroundStyle(.black)
@@ -108,14 +92,14 @@ public struct CartButton: View {
         .padding(.vertical, 9)
         .background(DSColors.accentPinky)
         .clipShape(RoundedRectangle(cornerRadius: 6))
-        .frame(width: 106, height: 32, alignment: .leading)
+        .frame(height: 32)
     }
 }
 
 #Preview {
     CartButton(
-        price: 750,
-        count: 0,
+        price: 150,
+        count: 1,
         onDecrement: {},
         onIncrement: {}
     )

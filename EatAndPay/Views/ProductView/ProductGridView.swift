@@ -52,6 +52,7 @@ struct ProductGridView: View {
             }
             .animation(.easeOut(duration: 0.2), value: productPreviewModel)
         }
+        .contentMargins(.bottom, 74, for: .scrollContent)
         .sheet(item: $selectedProduct) { product in
             CardDetailsView(
                 productId: product.id,

@@ -58,6 +58,12 @@ public enum DSTypography {
     /// Второстепенный текст (вес)
     public static let caption: Font = .custom(interRegular, size: 14)
 
+    /// Body Large по макетам: Inter Regular, 16px, line-height 20px
+    public static let bodyLarge: Font = .custom(interRegular, size: 16)
+
+    /// Подзаголовок корзины: Inter Semi Bold, 14px, line-height 17px
+    public static let cartSubtitle: Font = .custom(interSemiBold, size: 14)
+
     /// Названия вкладок в tabBae
     public static let tabBarTitle: Font = .custom(interBold, size: 18)
 }
