@@ -18,6 +18,8 @@ struct CatalogView: View {
     @State private var searchViewModel = SearchViewModel(allProducts: [])
     @State private var orderViewModel = OrderViewModel(networkService: NetworkServicesImpl())
     @State private var addressModel = AddressModel(networkService: NetworkServicesImpl())
+    @State private var userProfileViewModel = UserProfileViewModel(networkService: NetworkServicesImpl())
+
     @State private var path = NavigationPath()
     @State private var isCartPresented = false
     @State private var isSearchPresented = false
@@ -39,6 +41,9 @@ struct CatalogView: View {
             }
             .padding(.bottom, 12)
             .frame(height: 50)
+        } else {
+            Color.clear
+                .frame(height: 50)
         }
     }
 
@@ -57,7 +62,9 @@ struct CatalogView: View {
                 } label: {
                     AddressView(
                         address: addressModel,
-                        orderViewModel: orderViewModel
+                        orderViewModel: orderViewModel,
+                        userProfile: userProfileViewModel,
+                        isCart: false
                     )
                 }
                 .padding(.horizontal, 12)
@@ -72,79 +79,83 @@ struct CatalogView: View {
                 )
 
                 .padding(.top, 0)
+                Group {
+                    switch catalogModel.selectedTab {
+                    case .forYou:
+                        Text("Для тебя")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    case .catalog:
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("От Даркстора")
+                                    .font(DSTypography.hugeTitle)
+                                    .tracking(-0.165)
+                                    .lineSpacing(7)
+                                    .padding(.top, 20)
+                                    .padding(.bottom, 8)
 
-                switch catalogModel.selectedTab {
-                case .forYou:
-                    Text("Для тебя")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                case .catalog:
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text("От Даркстора")
-                                .font(DSTypography.hugeTitle)
-                                .tracking(-0.165)
-                                .lineSpacing(7)
-                                .padding(.top, 20)
-                                .padding(.bottom, 8)
-
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible(), spacing: 2),
-                                    GridItem(.flexible(), spacing: 2),
-                                    GridItem(.flexible(), spacing: 2)
-                                ],
-                                spacing: 2
-                            ) {
-                                ForEach(catalogModel.catalogService.categories) { category in
-                                    Button {
-                                        path.append(category)
-                                    } label: {
-                                        CatalogCardsView(catalogCardModel: category)
+                                LazyVGrid(
+                                    columns: [
+                                        GridItem(.flexible(), spacing: 2),
+                                        GridItem(.flexible(), spacing: 2),
+                                        GridItem(.flexible(), spacing: 2)
+                                    ],
+                                    spacing: 2
+                                ) {
+                                    ForEach(catalogModel.catalogService.categories) { category in
+                                        Button {
+                                            path.append(category)
+                                        } label: {
+                                            CatalogCardsView(catalogCardModel: category)
+                                        }
+                                        .buttonStyle(.plain)
                                     }
-                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .overlay {
+                                if catalogModel.catalogService.isLoadingCategories {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                                        .scaleEffect(1.5)
+                                        .padding(.top, 100)
                                 }
                             }
                         }
-                        .padding(.horizontal, 12)
-                        .overlay {
-                            if catalogModel.catalogService.isLoadingCategories {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
-                                    .scaleEffect(1.5)
-                                    .padding(.top, 100)
+                    case .discounts:
+                        Text("Скидки")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    case .favorites:
+                        ProductGridView(
+                            productPreviewModel: catalogModel.catalogService.products.data.filter { catalogModel.catalogService.favoritesService.isFavorite(productId: $0.id) },
+                            title: "Избранное",
+                            cartService: cartService,
+                            favoritesService: catalogModel.catalogService.favoritesService
+                        )
+                        .task(id: catalogModel.selectedTab) {
+                            if catalogModel.selectedTab == .favorites {
+                                await catalogModel.catalogService.loadAllProducts()
                             }
                         }
                     }
-                case .discounts:
-                    Text("Скидки")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                case .favorites:
-                    ProductGridView(
-                        productPreviewModel: catalogModel.catalogService.products.data.filter { catalogModel.catalogService.favoritesService.isFavorite(productId: $0.id) },
-                        title: "Избранное",
-                        cartService: cartService,
-                        favoritesService: catalogModel.catalogService.favoritesService
-                    )
-                    .task(id: catalogModel.selectedTab) {
-                        if catalogModel.selectedTab == .favorites {
-                            await catalogModel.catalogService.loadAllProducts()
-                        }
-                    }
                 }
+                .transition(.opacity.combined(with: .scale(scale: 0.92)))
+                .animation(.easeInOut(duration: 0.35), value: catalogModel.selectedTab)
             }
             .onChange(of: catalogModel.catalogService.products.data) { _, newValue in
                 searchViewModel.allProducts = newValue
             }
             .overlay(alignment: .bottom) {
-                HStack {
+                HStack(alignment: .bottom) {
                     searchButtonView(isPresented: $isSearchPresented)
                         .frame(height: 50)
+                        .transition(.opacity.combined(with: .scale(scale: 0.92)))
                     Spacer()
                     checkoutButtonView(isPresented: $isCartPresented)
-                        .frame(height: 50)
                 }
                 .padding(.horizontal, 12)
                 .padding(.bottom, 12)
+                .animation(.easeInOut(duration: 0.3), value: cartService.cart?.items.isEmpty)
             }
             .navigationTitle("")
             .sheet(isPresented: $isCartPresented) {
@@ -183,6 +194,7 @@ struct CatalogView: View {
                 }
                 await cartService.loadCart()
                 await addressModel.loadAddress()
+                await userProfileViewModel.loadUserProfile()
                 searchViewModel.allProducts = catalogModel.catalogService.products.data
             }
         }

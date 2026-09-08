@@ -42,14 +42,17 @@ struct ProductGridView: View {
                         favoritesService: favoritesService,
                         cartService: cartService
                     )
-                    .frame(maxWidth: .infinity)
+                    .frame(width: 205)
                     .padding(.horizontal, 10)
                     .onTapGesture {
                         selectedProduct = data
                     }
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
             }
+            .animation(.easeOut(duration: 0.2), value: productPreviewModel)
         }
+        .contentMargins(.bottom, 74, for: .scrollContent)
         .sheet(item: $selectedProduct) { product in
             CardDetailsView(
                 productId: product.id,
@@ -64,7 +67,30 @@ struct ProductGridView: View {
 
 #Preview {
     ProductGridView(
-        productPreviewModel: [],
+        productPreviewModel: [
+            ProductPreviewModel(
+                id: "1",
+                image: "https://eat-and-pay.t02.ru/uploads/eats-jxl/echpochmak.jxl",
+                name: "Огурец в тесте",
+                weight: 80,
+                price: 750,
+                rating: 3.8,
+                reviewCount: 1356,
+                isFavorite: false,
+                discount: 100
+            ),
+            ProductPreviewModel(
+                id: "2",
+                image: "https://eat-and-pay.t02.ru/uploads/eats-jxl/echpochmak.jxl",
+                name: "Огурец в тесте",
+                weight: 80,
+                price: 750,
+                rating: 3.8,
+                reviewCount: 1356,
+                isFavorite: false,
+                discount: 100
+            )
+        ],
         title: "Выпечка",
         cartService:
             CartService(

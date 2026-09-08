@@ -102,6 +102,16 @@ public enum DSColors {
         endPoint: .trailing
     )
 
+    /// Градиент кнопки, когда она недоступна
+    public static let grayGradient = LinearGradient(
+        colors: [
+            Color(red: 240/255, green: 236/255, blue: 244/255),
+            Color(red: 240/255, green: 236/255, blue: 244/255)
+        ],
+        startPoint: .top,
+        endPoint: .bottom
+    )
+
     // MARK: - Text
 
     /// Основной текст

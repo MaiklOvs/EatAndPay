@@ -46,7 +46,7 @@ struct AddressMapView: View {
                     return
                 }
                 await MainActor.run {
-                    mapModel.selectedAddress = mapItem.address?.fullAddress ?? "Address not available"
+                    mapModel.selectedAddress = mapItem.address?.shortAddress ?? "Address not available"
                 }
             } catch {
                 print("Reverse geocoding failed: \(error)")

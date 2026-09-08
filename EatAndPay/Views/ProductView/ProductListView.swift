@@ -32,6 +32,11 @@ struct ProductListView: View {
             }
             .padding(.bottom, 12)
             .frame(maxWidth: .infinity, alignment: .trailing)
+            .frame(height: 50)
+            .transition(.opacity.combined(with: .scale(scale: 0.92)))
+        } else {
+            Color.clear
+                .frame(height: 50)
         }
     }
 
@@ -43,15 +48,18 @@ struct ProductListView: View {
             favoritesService: catalogModel.catalogService.favoritesService
         )
         .overlay(alignment: .bottom) {
-            HStack {
+            HStack(alignment: .bottom) {
                 SearchButton(action: {
                     isSearchPresented = true
                 })
+                .frame(height: 50)
+                .transition(.opacity.combined(with: .scale(scale: 0.92)))
                 Spacer()
                 checkoutButtonView
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
+            .animation(.easeInOut(duration: 0.3), value: cartService.cart?.items.isEmpty)
         }
         .overlay {
             if catalogModel.catalogService.isLoadingProducts && catalogModel.catalogService.products.data.isEmpty {

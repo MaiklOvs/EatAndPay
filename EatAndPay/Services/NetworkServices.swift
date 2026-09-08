@@ -29,4 +29,8 @@ protocol NetworkServices: Sendable {
     func deleteAddress(input: Operations.delete_sol_addresses_sol__lcub_id_rcub_.Input) async throws -> Operations.delete_sol_addresses_sol__lcub_id_rcub_.Output.Ok
     func updateAddress(input: Operations.put_sol_addresses_sol__lcub_id_rcub_.Input) async throws -> Operations.put_sol_addresses_sol__lcub_id_rcub_.Output.Ok
     func getOrders() async throws -> [Components.Schemas.Order]
+    func getUserProfile() async throws -> Components.Schemas.UserProfile
+    func upadateUserProfile(input: Operations.put_sol_users_sol_me.Input) async throws -> Operations.put_sol_users_sol_me.Output.Ok
+    func logout() async throws -> Operations.post_sol_logout.Output.Ok
+    func deleteUserProfile() async throws -> Operations.delete_sol_users_sol_me.Output.Ok
 }

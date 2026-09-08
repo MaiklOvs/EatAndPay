@@ -13,35 +13,79 @@ struct OrdersView: View {
     @Environment(\.dismiss) private var dismiss
 
     let orderViewModel: OrderViewModel
+    let user: UserProfileViewModel?
+
     @State private var selectedOrder: OrderModel?
+    @State private var isUserProfilePresented = false
 
     var attributedText: AttributedString {
-        var result = AttributedString("Анастасия\n")
+        var result = AttributedString("\(user?.userProfile?.name ?? "")\n")
         result.font = DSTypography.authorReviewTitle
 
-        var subtitle = AttributedString("+7 908 305-80-34")
+        var subtitle = AttributedString("\(user?.userProfile?.phone.asPhoneNumber ?? "")")
         subtitle.font = DSTypography.caption
 
         result.append(subtitle)
         return result
     }
-    
+
+    private var activeOrders: [OrderModel] {
+        orderViewModel.orders.filter { $0.status == .active }
+    }
+
+    private var completedOrders: [OrderModel] {
+        orderViewModel.orders.filter { $0.status == .completed }
+    }
+
+    private func orderButton(for order: OrderModel) -> some View {
+        Button {
+            selectedOrder = order
+        } label: {
+            ActiveOrderView(
+                orders: order.items,
+                addressLine: order.address.addressLine
+            )
+            .padding(.horizontal, 12)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func completedOrderButton(for order: OrderModel) -> some View {
+        Button {
+            selectedOrder = order
+        } label: {
+            CompletedOrderView(
+                orders: order.items,
+                totalPrice: order.totalPrice,
+                totalItems: order.totalItems,
+                deliveryDate: order.deliveryDate ?? ""
+            )
+            .padding(.horizontal, 12)
+        }
+        .buttonStyle(.plain)
+    }
+
     var body: some View {
         VStack {
             HStack {
                 HStack {
-                    Circle()
-                        .fill(DSColors.lightGradient)
-                        .frame(width: 40, height: 40)
-                        .padding(.leading, 12)
-                        .overlay(
-                            Text("А")
-                                .font(DSTypography.authorReviewTitle)
-                                .padding(.leading, 12)
-                        )
-                    Text(attributedText)
-                    Image(.chevronRight)
-                        .padding(.top, 16.5)
+                    Button {
+                        isUserProfilePresented = true
+                    } label: {
+                        Circle()
+                            .fill(DSColors.lightGradient)
+                            .frame(width: 40, height: 40)
+                            .padding(.leading, 12)
+                            .overlay(
+                                Text(user?.userProfile?.name.prefix(1) ?? "A")
+                                    .font(DSTypography.authorReviewTitle)
+                                    .padding(.leading, 12)
+                            )
+                        Text(attributedText)
+                        Image(.chevronRight)
+                            .padding(.top, 16.5)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.top, 12)
                 Spacer()
@@ -50,18 +94,24 @@ struct OrdersView: View {
                     .padding(.top, 12)
             }
             ScrollView {
-                ForEach(orderViewModel.orders) { order in
-                    if order.status == .active {
-                        Button {
-                            selectedOrder = order
-                        } label: {
-                            ActiveOrderView(
-                                orders: order.items,
-                                addressLine: order.address.addressLine
-                            )
-                            .padding(.horizontal, 12)
+                LazyVStack(spacing: 12, pinnedViews: []) {
+                    Section {
+                        ForEach(activeOrders) { order in
+                            orderButton(for: order)
                         }
-                        .buttonStyle(.plain)
+                    }
+                    Section {
+                        if !completedOrders.isEmpty {
+                            Text("История заказов")
+                                .font(DSTypography.descriptionTitle)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 12)
+                                .padding(.top, 12)
+                        }
+
+                        ForEach(completedOrders) { order in
+                            completedOrderButton(for: order)
+                        }
                     }
                 }
             }
@@ -69,6 +119,11 @@ struct OrdersView: View {
         }
         .sheet(item: $selectedOrder) { order in
             OrderDetailView(orderModel: order)
+        }
+        .sheet(isPresented: $isUserProfilePresented) {
+            if let userProfile = user {
+                UserProfileView(user: userProfile)
+            }
         }
         .task {
             await orderViewModel.loadOrders()
@@ -78,6 +133,7 @@ struct OrdersView: View {
 
 #Preview {
     OrdersView(
-        orderViewModel: OrderViewModel(networkService: NetworkServicesImpl())
+        orderViewModel: OrderViewModel(networkService: NetworkServicesImpl()),
+        user: UserProfileViewModel(networkService: NetworkServicesImpl())
     )
 }

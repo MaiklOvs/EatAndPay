@@ -71,10 +71,11 @@ struct CartView: View {
                         .padding(.top, 10)
                 }
 
-                HStack {
-                    Text("\(cartService.cart?.deliveryTime.formatted() ?? "0") минут")
+                HStack(spacing: 4) {
+                    Text("\(cartService.cart?.deliveryTime.formatted() ?? "0") минут ·")
                     Text(countString(count: cartService.totalCount()))
                 }
+                .font(DSTypography.cartSubtitle)
                 ScrollView {
                     LazyVStack(alignment: .leading) {
                         ForEach(cartService.cart?.items ?? []) { item in
@@ -95,7 +96,9 @@ struct CartView: View {
                 } label: {
                     AddressView(
                         address: addressModel,
-                        orderViewModel: nil
+                        orderViewModel: nil,
+                        userProfile: nil,
+                        isCart: true
                     )
                 }
                 .buttonStyle(.plain)

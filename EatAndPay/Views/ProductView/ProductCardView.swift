@@ -45,7 +45,7 @@ struct ProductCardView: View {
                         Image(.isFavorite)
                             .padding(10)
                     } else {
-                        Image(.heart)
+                        Image(.heartCart)
                             .padding(10)
                     }
                 }
@@ -58,11 +58,11 @@ struct ProductCardView: View {
                     .font(DSTypography.caption)
                     .foregroundStyle(DSColors.textSecondary)
             }
-            HStack {
+            HStack(spacing: 2) {
                 Image(.star)
                     .renderingMode(.template)
                     .foregroundStyle(Color.primary)
-                Text(product.rating.formatted())
+                Text(product.rating.ratingString)
                     .font(DSTypography.caption)
                 Image(.messages)
                     .renderingMode(.template)
@@ -82,10 +82,11 @@ struct ProductCardView: View {
                     Task {
                         await cartService.add(product: product)
                     }
-                },
-                isLoading: cartService.loadingItemIds.contains(product.id)
+                }
             )
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 10)
+            .padding(.top, 12)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)

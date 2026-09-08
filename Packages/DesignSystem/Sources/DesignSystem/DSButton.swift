@@ -23,9 +23,13 @@ public struct DSButton: View {
 
     private let buttonTitle: String
     private let style: Style
+    private let disabled: Bool
     private let isLoading: Bool
 
     func getBackground(style: Style) -> LinearGradient {
+        if disabled {
+            return DSColors.grayGradient
+        }
         switch style {
         case .accent:
             return DSColors.accentGradient
@@ -39,6 +43,9 @@ public struct DSButton: View {
     }
 
     func getForeground(style: Style) -> Color {
+        if disabled {
+            return .gray
+        }
         switch style {
         case .accent:
             return .white
@@ -68,12 +75,14 @@ public struct DSButton: View {
         action: @escaping () -> Void,
         buttonTitle: String = "В корзину",
         style: Style = .accent,
-        isLoading: Bool = false
+        isLoading: Bool = false,
+        disabled: Bool = false
     ) {
         self.action = action
         self.buttonTitle = buttonTitle
         self.style = style
         self.isLoading = isLoading
+        self.disabled = disabled
     }
 
     public var body: some View {
@@ -99,6 +108,7 @@ public struct DSButton: View {
                     .stroke(getBorder(style: style), lineWidth: 1.5)
             )
         }
+        .disabled(disabled)
     }
 }
 

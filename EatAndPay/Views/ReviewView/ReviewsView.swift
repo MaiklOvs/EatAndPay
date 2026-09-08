@@ -13,7 +13,16 @@ struct ReviewsView: View {
     @Bindable private var productService: ProductService
     @State private var isReviewsPresented = false
     @State private var isSuccessPresented = false
+    @State private var selectedSort: ReviewSort = .newest
+
     @Environment(\.dismiss) private var dismiss
+
+    enum ReviewSort: String, CaseIterable {
+        case newest = "Сначала новые"
+        case oldest = "Сначала старые"
+        case highest = "Сначала высокие"
+        case lowest = "Сначала низкие"
+    }
 
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -28,7 +37,6 @@ struct ReviewsView: View {
 
         if let date = isoFormatter.date(from: dateString) {
             let result = dateFormatter.string(from: date)
-            print("✅ ISO success: \(result)") // 👈 Добавьте
             return result
         }
 
@@ -45,15 +53,26 @@ struct ReviewsView: View {
 
         if let date = fallbackFormatter.date(from: dateString) {
             let result = dateFormatter.string(from: date)
-            print("✅ Fallback success: \(result)") // 👈 Добавьте
             return result
         }
-        print("❌ Failed: returning original \(dateString)")
         return dateString
     }
 
     private var reviews: [Review] {
         productService.productCard?.reviews ?? []
+    }
+
+    private var sortedReviews: [Review] {
+        switch selectedSort {
+        case .newest:
+            return reviews.sorted { $0.createdAt > $1.createdAt }
+        case .oldest:
+            return reviews.sorted { $0.createdAt < $1.createdAt }
+        case .highest:
+            return reviews.sorted { $0.rating > $1.rating }
+        case .lowest:
+            return reviews.sorted { $0.rating < $1.rating }
+        }
     }
 
     private var totalReviews: Int {
@@ -156,15 +175,23 @@ struct ReviewsView: View {
                 buttonTitle: "Написать отзыв",
                 style: .light
             )
-                .padding(.horizontal, 12)
+            .padding(.horizontal, 12)
+            Picker("Сортировка", selection: $selectedSort) {
+                ForEach(ReviewSort.allCases, id: \.self) { sort in
+                    Text(sort.rawValue).tag(sort)
+                }
+            }
+            .pickerStyle(.menu)
+            .tint(.black)
             ScrollView {
                 LazyVStack(spacing: 2) {
-                    ForEach(reviews) { review in
+                    ForEach(sortedReviews) { review in
                         reviewCell(review)
                     }
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 24)
+                .animation(.easeInOut(duration: 0.25), value: selectedSort)
             }
         }
         .sheet(isPresented: $isReviewsPresented) {
