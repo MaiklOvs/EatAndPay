@@ -10,7 +10,7 @@ import DesignSystem
 
 struct ReviewsView: View {
 
-    private var viewModel: ProductCardViewModel
+    @Bindable private var productService: ProductService
     @State private var isReviewsPresented = false
     @State private var isSuccessPresented = false
     @Environment(\.dismiss) private var dismiss
@@ -53,7 +53,7 @@ struct ReviewsView: View {
     }
 
     private var reviews: [Review] {
-        viewModel.productCard?.reviews ?? []
+        productService.productCard?.reviews ?? []
     }
 
     private var totalReviews: Int {
@@ -99,9 +99,9 @@ struct ReviewsView: View {
 
 
     init(
-        viewModel: ProductCardViewModel
+        productService: ProductService
     ) {
-        self.viewModel = viewModel
+        self.productService = productService
     }
 
     var body: some View {
@@ -120,7 +120,7 @@ struct ReviewsView: View {
                     .padding(.trailing, 12)
             }
             HStack(alignment: .top, spacing: 0) {
-                Text(String(format: "%.1f", viewModel.productCard?.rating ?? 0))
+                Text(String(format: "%.1f", productService.productCard?.rating ?? 0))
                     .font(DSTypography.estimationHuge)
                     .frame(width: 135, alignment: .trailing)
                     .padding(.trailing, 8)
@@ -169,7 +169,7 @@ struct ReviewsView: View {
         }
         .sheet(isPresented: $isReviewsPresented) {
             NewReviewsView(
-                viewModel: viewModel,
+                productService: productService,
                 onSuccess: {
                     isReviewsPresented = false
                     isSuccessPresented = true
@@ -184,6 +184,6 @@ struct ReviewsView: View {
 
 #Preview {
     ReviewsView(
-        viewModel: ProductCardViewModel(networkService: NetworkServicesImpl())
+        productService: ProductService(networkService: NetworkServicesImpl())
     )
 }

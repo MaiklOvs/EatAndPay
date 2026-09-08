@@ -23,6 +23,7 @@ public struct DSButton: View {
 
     private let buttonTitle: String
     private let style: Style
+    private let isLoading: Bool
 
     func getBackground(style: Style) -> LinearGradient {
         switch style {
@@ -66,18 +67,25 @@ public struct DSButton: View {
     public init(
         action: @escaping () -> Void,
         buttonTitle: String = "В корзину",
-        style: Style = .accent
+        style: Style = .accent,
+        isLoading: Bool = false
     ) {
         self.action = action
         self.buttonTitle = buttonTitle
         self.style = style
+        self.isLoading = isLoading
     }
 
     public var body: some View {
         Button(action: action) {
             HStack {
-                Text(buttonTitle)
-                    .font(.system(size: 24, weight: .semibold))
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                } else {
+                    Text(buttonTitle)
+                        .font(.system(size: 24, weight: .semibold))
+                }
             }
             .frame(maxWidth: .infinity)
             .lineLimit(1)

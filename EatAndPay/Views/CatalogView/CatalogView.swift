@@ -11,24 +11,29 @@ import DesignSystem
 
 struct CatalogView: View {
 
-    @Environment(\.modelContext)
-    private var context
+    @Environment(\.modelContext) private var context
 
-    @State private var catalogModel = CatalogModel(networkService: NetworkServicesImpl())
-    @State private var cartViewModel = CartViewModel(networkService: NetworkServicesImpl())
+    @State private var catalogModel: CatalogModel
+    var cartService: CartService
     @State private var searchViewModel = SearchViewModel(allProducts: [])
+    @State private var orderViewModel = OrderViewModel(networkService: NetworkServicesImpl())
     @State private var addressModel = AddressModel(networkService: NetworkServicesImpl())
     @State private var path = NavigationPath()
     @State private var isCartPresented = false
     @State private var isSearchPresented = false
     @State private var isAddNewAddressPresented = false
 
+    init(catalogModel: CatalogModel, cartService: CartService) {
+        self._catalogModel = State(initialValue: catalogModel)
+        self.cartService = cartService
+    }
+
     @ViewBuilder
     private func checkoutButtonView(isPresented: Binding<Bool>) -> some View {
-        if let cart = cartViewModel.cart, !cart.items.isEmpty {
+        if let cart = cartService.cart, !cart.items.isEmpty {
             CheckoutButton(
-                price: cartViewModel.totalPrice(),
-                count: cartViewModel.totalCount()
+                price: cartService.totalPrice(),
+                count: cartService.totalCount()
             ) {
                 isPresented.wrappedValue = true
             }
@@ -50,7 +55,10 @@ struct CatalogView: View {
                 Button {
                     isAddNewAddressPresented = true
                 } label: {
-                    AddressView(address: addressModel)
+                    AddressView(
+                        address: addressModel,
+                        orderViewModel: orderViewModel
+                    )
                 }
                 .padding(.horizontal, 12)
                 .padding(.bottom, 15)
@@ -87,7 +95,7 @@ struct CatalogView: View {
                                 ],
                                 spacing: 2
                             ) {
-                                ForEach(catalogModel.categories) { category in
+                                ForEach(catalogModel.catalogService.categories) { category in
                                     Button {
                                         path.append(category)
                                     } label: {
@@ -98,24 +106,33 @@ struct CatalogView: View {
                             }
                         }
                         .padding(.horizontal, 12)
+                        .overlay {
+                            if catalogModel.catalogService.isLoadingCategories {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                                    .scaleEffect(1.5)
+                                    .padding(.top, 100)
+                            }
+                        }
                     }
                 case .discounts:
                     Text("Скидки")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 case .favorites:
                     ProductGridView(
-                        productPreviewModel: catalogModel.products.data.filter { $0.isFavorite },
+                        productPreviewModel: catalogModel.catalogService.products.data.filter { catalogModel.catalogService.favoritesService.isFavorite(productId: $0.id) },
                         title: "Избранное",
-                        onFavoriteToggle: { productId in
-                            Task {
-                                await catalogModel.toggleFavorite(for: productId)
-                            }
-                        },
-                        cartViewModel: cartViewModel
+                        cartService: cartService,
+                        favoritesService: catalogModel.catalogService.favoritesService
                     )
+                    .task(id: catalogModel.selectedTab) {
+                        if catalogModel.selectedTab == .favorites {
+                            await catalogModel.catalogService.loadAllProducts()
+                        }
+                    }
                 }
             }
-            .onChange(of: catalogModel.products.data) { _, newValue in
+            .onChange(of: catalogModel.catalogService.products.data) { _, newValue in
                 searchViewModel.allProducts = newValue
             }
             .overlay(alignment: .bottom) {
@@ -133,22 +150,19 @@ struct CatalogView: View {
             .sheet(isPresented: $isCartPresented) {
                 CartView(
                     addressModel: addressModel,
-                    cartViewModel: cartViewModel
+                    cartService: cartService
                 )
             }
             .sheet(isPresented: $isSearchPresented) {
                 SearchView(
-                    onFavoriteToggle: { productId in
-                        Task {
-                            await catalogModel.toggleFavorite(for: productId)
-                        }
-                        if let index = searchViewModel.allProducts.firstIndex(where: { $0.id == productId }) {
-                            searchViewModel.allProducts[index].isFavorite.toggle()
-                        }
-                    },
                     searchViewModel: searchViewModel,
-                    cartViewModel: cartViewModel
+                    favoritesService: catalogModel.catalogService.favoritesService,
+                    cartService: cartService,
+                    isLoading: catalogModel.catalogService.isLoadingProducts
                 )
+                .task {
+                    await catalogModel.catalogService.loadAllProducts()
+                }
             }
             .sheet(isPresented: $isAddNewAddressPresented) {
                 AddressListView(addressModel: addressModel)
@@ -159,22 +173,40 @@ struct CatalogView: View {
                     addressModel: addressModel,
                     name: category.name,
                     category: category.id,
-                    cartViewModel: cartViewModel,
+                    cartService: cartService,
                     searchViewModel: searchViewModel
                 )
             }
             .task {
-                cartViewModel.setContext(context)
-                await catalogModel.loadCategories()
-                await catalogModel.loadProductsList()
-                await cartViewModel.loadCart()
+                if catalogModel.catalogService.categories.isEmpty {
+                    await catalogModel.catalogService.loadCategories()
+                }
+                await cartService.loadCart()
                 await addressModel.loadAddress()
-                searchViewModel.allProducts = catalogModel.products.data
+                searchViewModel.allProducts = catalogModel.catalogService.products.data
             }
         }
     }
 }
 
 #Preview {
-    CatalogView()
+    let networkService = NetworkServicesImpl()
+    let favoritesService = FavoritesService(networkServices: networkService)
+    let catalogService = CatalogService(
+        networkService: networkService,
+        favoritesService: favoritesService
+    )
+    let catalogModel = CatalogModel(catalogService: catalogService)
+    let cartService = CartService(
+        cartActor: CartActor(
+            container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+            networkService: networkService
+        )
+    )
+
+    CatalogView(
+        catalogModel: catalogModel,
+        cartService: cartService
+    )
+        .modelContainer(for: [PersistedCart.self, PersistedCartItem.self])
 }

@@ -13,10 +13,11 @@ struct CatalogCardsView: View {
     let catalogCardModel: CatalogCard
 
     var body: some View {
-        AsyncImage(url: URL(string: catalogCardModel.image)) { image in
-            switch image {
-            case .success:
-                image.image?.resizable()
+        CachedAsyncImage(
+            urlString: catalogCardModel.image,
+            content: { image in
+                image
+                    .resizable()
                     .overlay() {
                         LinearGradient(
                             stops: [
@@ -42,7 +43,8 @@ struct CatalogCardsView: View {
                     }
                     .frame(width: 115, height: 132)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
-            default:
+            },
+            placeholder: {
                 DSImagePlaceholder()
                     .overlay() {
                         LinearGradient(
@@ -70,7 +72,7 @@ struct CatalogCardsView: View {
                     .frame(width: 115, height: 132)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-        }
+        )
     }
 }
 

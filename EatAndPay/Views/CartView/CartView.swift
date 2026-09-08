@@ -7,22 +7,33 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct CartView: View {
 
     private let addressModel: AddressModel
 
-    @Bindable var cartViewModel: CartViewModel
+    var cartService: CartService
 
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var snackbarManager: SnackbarManager
 
     @State private var isAddNewAddressPresented = false
     @State private var isSuccessOrderPresented = false
+    @State private var createdOrder: OrderModel?
 
-    init(addressModel: AddressModel, cartViewModel: CartViewModel) {
+    private let orderViewModel: OrderViewModel
+
+    init(addressModel: AddressModel, cartService: CartService, orderViewModel: OrderViewModel) {
         self.addressModel = addressModel
-        self.cartViewModel = cartViewModel
+        self.cartService = cartService
+        self.orderViewModel = orderViewModel
+    }
+
+    init(addressModel: AddressModel, cartService: CartService) {
+        self.addressModel = addressModel
+        self.cartService = cartService
+        self.orderViewModel = OrderViewModel(networkService: NetworkServicesImpl())
     }
 
     func countString(count: Int) -> String {
@@ -50,7 +61,7 @@ struct CartView: View {
                     Text("Корзина")
                         .font(DSTypography.hugeTitle)
                         .padding(.top, 10)
-                    Text(cartViewModel.totalCount().formatted())
+                    Text(cartService.totalCount().formatted())
                         .font(DSTypography.hugeTitle)
                         .foregroundStyle(DSColors.textSecondary)
                         .padding(.top, 10)
@@ -61,12 +72,12 @@ struct CartView: View {
                 }
 
                 HStack {
-                    Text("\(cartViewModel.cart?.deliveryTime.formatted() ?? "0") минут")
-                    Text(countString(count: cartViewModel.totalCount()))
+                    Text("\(cartService.cart?.deliveryTime.formatted() ?? "0") минут")
+                    Text(countString(count: cartService.totalCount()))
                 }
                 ScrollView {
                     LazyVStack(alignment: .leading) {
-                        ForEach(cartViewModel.cart?.items ?? []) { item in
+                        ForEach(cartService.cart?.items ?? []) { item in
                             ProductInCart(cartItem: CartItem(
                                 id: item.id,
                                 image: item.image,
@@ -75,36 +86,41 @@ struct CartView: View {
                                 price: item.price * item.quantity,
                                 quantity: item.quantity,
                                 available: item.available
-                            ), cartViewModel: cartViewModel)
+                            ), cartService: cartService)
                         }
                     }
                 }
                 Button {
                     isAddNewAddressPresented = true
                 } label: {
-                    AddressView(address: addressModel)
+                    AddressView(
+                        address: addressModel,
+                        orderViewModel: nil
+                    )
                 }
                 .buttonStyle(.plain)
                 HStack(spacing: 10) {
                     Text("Итого:")
                         .font(DSTypography.hugeTitle)
                         .padding(.top, 10)
-                    Text(cartViewModel.totalPrice().formatted() + " ₽")
+                    Text(cartService.totalPrice().formatted() + " ₽")
                         .font(DSTypography.hugeTitle)
                         .foregroundStyle(DSColors.textSecondary)
                         .padding(.top, 10)
                 }
                 CheckoutButton(
-                    price: cartViewModel.totalPrice(),
-                    count: cartViewModel.totalCount(),
+                    price: cartService.totalPrice(),
+                    count: cartService.totalCount(),
                     isExpanded: true,
+                    isLoading: cartService.isMakingOrder,
                     action: {
                         Task {
-                            let success = await cartViewModel.makeOrder(
+                            let success = await cartService.makeOrder(
                                 paymentMethod: "card",
                                 addressID: addressModel.selectedAddress?.id ?? ""
                             )
                             if success {
+                                await orderViewModel.loadOrders()
                                 isSuccessOrderPresented = true
                             } else {
                                 snackbarManager.show(title: "Не удалось оформить заказ, попробуйте еще раз")
@@ -121,12 +137,18 @@ struct CartView: View {
             .sheet(isPresented: $isSuccessOrderPresented) {
                 SuccessView(
                     title: "Заказ оформлен",
-                    subtitle: "Товары уже в процессе сборки, скоро привезём!",
-                    action: { dismiss() }
+                    subtitle: "Товары уже в процессе сборки, скоро привезём!",
+                    action: {
+                        isSuccessOrderPresented = false
+                        createdOrder = orderViewModel.orders.first { $0.status == .active }
+                    }
                 )
             }
+            .sheet(item: $createdOrder) { order in
+                OrderDetailView(orderModel: order)
+            }
             .task {
-                await cartViewModel.loadCart()
+                await cartService.loadCart()
             }
 
             if let message = snackbarManager.message {
@@ -142,6 +164,12 @@ struct CartView: View {
 #Preview {
     CartView(
         addressModel: AddressModel(networkService: NetworkServicesImpl()),
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+        cartService:
+            CartService(
+                cartActor: CartActor(
+                    container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                    networkService: NetworkServicesImpl()
+                )
+            )
     )
 }

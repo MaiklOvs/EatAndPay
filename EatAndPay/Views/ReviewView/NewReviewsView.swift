@@ -25,7 +25,7 @@ struct Movie: Transferable {
 
 struct NewReviewsView: View {
 
-    private var viewModel: ProductCardViewModel
+    @Bindable private var productService: ProductService
     private let onSuccess: () -> Void
     @State private var text: String = ""
     @State private var selectedRating: Int = 0
@@ -36,10 +36,10 @@ struct NewReviewsView: View {
     @Environment(\.dismiss) private var dismiss
 
     init(
-        viewModel: ProductCardViewModel,
+        productService: ProductService,
         onSuccess: @escaping () -> Void = {}
     ) {
-        self.viewModel = viewModel
+        self.productService = productService
         self.onSuccess = onSuccess
     }
 
@@ -54,25 +54,32 @@ struct NewReviewsView: View {
                 CloseButton(action: { dismiss() } )
             }
             HStack {
-                AsyncImage(url: URL(string: viewModel.productCard?.image ?? "")) { image in
-                    image.image?.resizable()
-                        .aspectRatio(contentMode: .fill)
-                }
-                .frame(width: 80, height: 80)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                CachedAsyncImage(
+                    urlString: productService.productCard?.image ?? "",
+                    content: { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 80, height: 80)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    },
+                    placeholder: {
+                        DSImagePlaceholder()
+                    }
+                )
                 VStack {
                     HStack(alignment: .top, spacing: 8) {
-                        Text(viewModel.productCard?.name ?? "")
+                        Text(productService.productCard?.name ?? "")
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        Text("\(viewModel.productCard?.weight.formatted() ?? "") г")
+                        Text("\(productService.productCard?.weight.formatted() ?? "") г")
                             .foregroundStyle(DSColors.textSecondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Text(viewModel.productCard?.description ?? "")
+                    Text(productService.productCard?.description ?? "")
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
@@ -161,8 +168,8 @@ struct NewReviewsView: View {
             DSButton(
                 action: {
                     Task {
-                        await viewModel.addReview(
-                            id: viewModel.productCard?.id ?? "",
+                        await productService.addReview(
+                            id: productService.productCard?.id ?? "",
                             rating: selectedRating,
                             content: text
                         )
@@ -170,7 +177,8 @@ struct NewReviewsView: View {
                         dismiss()
                     }
                 },
-                buttonTitle: "Оставить отзыв"
+                buttonTitle: "Оставить отзыв",
+                isLoading: productService.isLoadingAddReview
             )
         }
         .padding(.horizontal, 12)
@@ -195,5 +203,5 @@ struct NewReviewsView: View {
 }
 
 #Preview {
-    NewReviewsView(viewModel: ProductCardViewModel(networkService: NetworkServicesImpl()))
+    NewReviewsView(productService: ProductService(networkService: NetworkServicesImpl()))
 }

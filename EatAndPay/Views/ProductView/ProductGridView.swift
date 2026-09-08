@@ -7,14 +7,16 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct ProductGridView: View {
 
     let productPreviewModel: [ProductPreviewModel]
     let title: String
 
-    let onFavoriteToggle: (String) -> Void
-    @Bindable var cartViewModel: CartViewModel
+    var cartService: CartService
+
+    @Bindable var favoritesService: FavoritesService
     @State private var selectedProduct: ProductPreviewModel?
 
     var body: some View {
@@ -37,10 +39,8 @@ struct ProductGridView: View {
                 ForEach(productPreviewModel) { data in
                     ProductCardView(
                         product: data,
-                        onFavoriteToggle: {
-                            onFavoriteToggle(data.id)
-                        },
-                        cartViewModel: cartViewModel
+                        favoritesService: favoritesService,
+                        cartService: cartService
                     )
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 10)
@@ -53,8 +53,8 @@ struct ProductGridView: View {
         .sheet(item: $selectedProduct) { product in
             CardDetailsView(
                 productId: product.id,
-                cartViewModel: cartViewModel,
-                onFavoriteToggle: { onFavoriteToggle(product.id) }
+                cartService: cartService,
+                favoriteServices: favoritesService
             )
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
@@ -66,7 +66,13 @@ struct ProductGridView: View {
     ProductGridView(
         productPreviewModel: [],
         title: "Выпечка",
-        onFavoriteToggle: { _ in },
-        cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+        cartService:
+            CartService(
+                cartActor: CartActor(
+                    container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                    networkService: NetworkServicesImpl()
+                )
+            ),
+        favoritesService: FavoritesService(networkServices: NetworkServicesImpl())
     )
 }

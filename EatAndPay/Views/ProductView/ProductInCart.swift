@@ -7,21 +7,29 @@
 
 import SwiftUI
 import DesignSystem
+import SwiftData
 
 struct ProductInCart: View {
 
     let cartItem: CartItem
-    @Bindable var cartViewModel: CartViewModel
+    var cartService: CartService
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         HStack {
-            AsyncImage(url: URL(string: cartItem.image)) { image in
-                image.image?.resizable()
-                    .aspectRatio(contentMode: .fill)
-            }
-            .frame(width: 100, height: 100)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            CachedAsyncImage(
+                urlString: cartItem.image,
+                content: { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 100, height: 100)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                },
+                placeholder: {
+                    DSImagePlaceholder()
+                }
+            )
             VStack(alignment: .leading) {
                 Text(cartItem.price.formatted() + " ₽")
                 HStack {
@@ -31,8 +39,17 @@ struct ProductInCart: View {
                 }
                 CountButton(
                     count: cartItem.quantity,
-                    onDecrement: { cartViewModel.remove(productId: cartItem.id, price: cartItem.price) },
-                    onIncrement: { cartViewModel.add(productId: cartItem.id, price: cartItem.price) }
+                    onDecrement: {
+                        Task {
+                            await cartService.remove(productId: cartItem.id, price: cartItem.price)
+                        }
+                    },
+                    onIncrement: {
+                        Task {
+                            await cartService.add(productId: cartItem.id, price: cartItem.price)
+                        }
+                    },
+                    isLoading: cartService.loadingItemIds.contains(cartItem.id)
                 )
             }
             .padding(.bottom, 21)
@@ -50,6 +67,12 @@ struct ProductInCart: View {
         quantity: 1,
         available: true
     ),
-                  cartViewModel: CartViewModel(networkService: NetworkServicesImpl())
+                  cartService:
+                    CartService(
+                        cartActor: CartActor(
+                            container: try! ModelContainer(for: PersistedCart.self, PersistedCartItem.self),
+                            networkService: NetworkServicesImpl()
+                        )
+                    )
     )
 }
