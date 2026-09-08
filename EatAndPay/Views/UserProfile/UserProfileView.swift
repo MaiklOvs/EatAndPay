@@ -91,7 +91,6 @@ struct UserProfileView: View {
                             name: name,
                             birthday: birthday
                         )
-                        await user.loadUserProfile()
                         dismiss()
                     }
                 },

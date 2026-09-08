@@ -46,6 +46,7 @@ final class UserProfileViewModel {
             let input = Operations.put_sol_users_sol_me.Input(body: .json(body))
 
             let _ = try await networkService.upadateUserProfile(input: input)
+            await loadUserProfile()
         } catch {
             print("Failed to update user profile: \(error)")
         }
